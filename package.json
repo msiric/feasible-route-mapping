@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "enter-app": "cd application",
-    "postinstall": "npm run enter-app && yarn run transpile",
-    "heroku-postbuild": "npm run enter-app && cd client && yarn install && yarn run build"
+    "postinstall": "npm run enter-app && npm run transpile",
+    "heroku-postbuild": "npm run enter-app && cd client && npm install && npm run build"
   },
   "repository": {
     "type": "git",
