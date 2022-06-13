@@ -1,0 +1,21 @@
+{
+  "name": "feasible-route-mapping",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "enter-app": "cd application",
+    "postinstall": "npm run enter-app && yarn run transpile",
+    "heroku-postbuild": "npm run enter-app && cd client && yarn install && yarn run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msiric/feasible-route-mapping.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/msiric/feasible-route-mapping/issues"
+  },
+  "homepage": "https://github.com/msiric/feasible-route-mapping#readme"
+}

@@ -1,0 +1,76 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 1000;
+  width: 355px;
+  transition: 0.5s;
+}
+
+.containerHidden {
+  bottom: -175px;
+  transition: 0.5s;
+}
+
+@media only screen and (max-width: 600px) {
+  .container {
+    bottom: 20px;
+  }
+
+  .containerHidden {
+    bottom: -175px;
+    transition: 0.5s;
+  }
+}
+
+.card {
+  height: 160px;
+  width: 175px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.color {
+  display: flex;
+  align-items: center;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  margin-left: 16px;
+  font-size: 14px;
+}
+
+.gradient {
+  height: 140px;
+  width: 30px;
+  border-radius: 25px;
+  background: linear-gradient(
+    hsl(0, 100%, 50%),
+    hsl(60, 100%, 50%),
+    hsl(120, 100%, 50%)
+  );
+}
+
+.icon {
+  margin-left: 16px;
+  transform: rotate(90deg);
+  font-size: 32px;
+}
+
+.annotation {
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}

@@ -1,0 +1,115 @@
+.container {
+  max-height: 325px;
+  overflow-y: auto;
+}
+
+.itemOptions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.divider {
+  margin: 8px 0;
+  height: 10px;
+}
+
+.deleteAction {
+  height: 20px;
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.list {
+  padding: 4px 0;
+}
+
+.listWrapper .deleteAction {
+  top: 50%;
+  -webkit-transform: translateY(-55%);
+  -moz-transform: translateY(-55%);
+  -ms-transform: translateY(-55%);
+  transform: translateY(-55%);
+}
+
+.listItem {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.listItemPadding {
+  padding-right: 33px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.controlContainer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.controlWrapper {
+  display: flex;
+  flex-direction: column;
+  min-width: 30px;
+}
+
+.swapIcon {
+  height: 15px;
+  width: 15px;
+  cursor: pointer;
+}
+
+.deleteIcon {
+  padding: 0;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.excludeLocations {
+  margin-top: 8px;
+}
+
+.duration {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.spacer {
+  width: 100%;
+  margin: 4px 0;
+}
+
+.durationLabel {
+  font-size: 10px;
+  letter-spacing: -0.4px;
+}
+
+.totalDuration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.partition {
+  margin: 0 8px;
+  height: 10px;
+}

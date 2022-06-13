@@ -1,0 +1,36 @@
+.popperContainer {
+  z-index: 10;
+}
+
+.popperWrapper {
+  background-color: #121212;
+  color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.popperWrapper > ul > li {
+  font-size: 8px;
+}
+
+.popperList {
+  border-radius: 10px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.buttonGroup > .button:not(:last-of-type) {
+  font-size: 8px;
+  border-right: none;
+}
+
+.buttonGroup > .iconButton {
+  padding: 0;
+  min-width: 20px;
+  font-size: 8px;
+}
+
+.iconButton > svg {
+  font-size: 15px;
+}

@@ -1,0 +1,17 @@
+.container {
+  width: 355px;
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  z-index: 1001;
+  transition: 0.5s;
+}
+
+.containerHidden {
+  left: -355px;
+  transition: 0.5s;
+}
+
+.content {
+  padding-top: 8px;
+}

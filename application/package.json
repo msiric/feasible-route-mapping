@@ -1,0 +1,45 @@
+{
+  "name": "feasible-route-mapping-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "client": "cd client && yarn start",
+    "start": "node ./dist/app",
+    "start-dev": "nodemon ./dist/app",
+    "dev": "npx kill-port 3000 && npx kill-port 5000 && cross-env NODE_ENV=development && concurrently --kill-others \"yarn run transpile:watch\" \"yarn run start-dev\" \"yarn run client\"",
+    "transpile": "tsc",
+    "transpile:watch": "tsc -w",
+    "postinstall": "yarn run transpile",
+    "heroku-postbuild": "cd client && yarn install && yarn run build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "client/*"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^17.0.35",
+    "axios": "^0.27.2",
+    "compression": "^1.7.4",
+    "concurrently": "^7.2.1",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "nodemon": "^2.0.16",
+    "tsc": "^2.0.4",
+    "typescript": "^4.7.2"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.27.0",
+    "@typescript-eslint/parser": "^5.27.0",
+    "eslint": "^8.16.0"
+  }
+}

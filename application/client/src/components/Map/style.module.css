@@ -1,0 +1,31 @@
+.tooltip {
+  opacity: 1;
+  background: transparent;
+  border: transparent;
+  box-shadow: none;
+  font-weight: bold;
+  font-size: 15px;
+  position: absolute;
+  right: -15px;
+  top: 0px;
+  color: white;
+}
+
+.tooltip:before {
+  border: none;
+}
+
+.tooltipIcon {
+  width: 14px;
+}
+
+.tooltipLabel {
+  font-size: 10px;
+  margin-left: 8px;
+}
+
+.colorPreview {
+  width: 26px;
+  height: 10px;
+  border-radius: 25px;
+}
