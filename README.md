@@ -20,11 +20,11 @@ An isochrone is a line that connects points of equal travel time about a given l
 
 ## Results
 
-Journey's locations, time ranges and modes of transportation are provided by the user. The journey is broken into a sequence of segments: (xi, ti) to (xi+1, ti+1).
+Journey's locations, time ranges and modes of transportation are provided by the user. The journey is broken into a sequence of segments: (x<sub>i</sub>, t<sub>i</sub>) to (x<sub>i+1</sub>, t<sub>i+1</sub>).
 
 Valhalla’s routing engine is used to calculate the shortest journey between x<sub>i</sub> and x<sub>i+1</sub>, taking into account the specified mode of transportation. This is the minimum feasible journey time t<sub>min</sub>. 
 
-Using the provided timestamp data, the maximum journey time is calculated for this segment t<sub>max</sub> = t<sub>i+1</sub> - t<sub>i</sub>, since it is guaranteed that the journey does not take any longer than this to be traversed. 
+Using the provided timestamp data, the maximum journey time is calculated for this segment t<sub>max</sub> = t<sub>i+1</sub> - t<sub>i</sub> since it is guaranteed that the journey does not take any longer than this to be traversed. 
 
 Valhalla’s isochrone calculation is exploited to return the data for each segment of the journey (each pair defined as origin x<sub>i</sub> and destination x<sub>i+1</sub>). Isochrones are calculated for the first point x<sub>i</sub>, defined as an origin isochrone, with the range set to t<sub>min</sub> and the interval step set to 60 seconds up until it reaches t<sub>max</sub>. This means that if the minimum time to reach x<sub>i+1</sub> from x<sub>i</sub> is 10 minutes and the maximum time is 15 minutes, isochrones will be calculated for x<sub>i</sub> starting with 10 minutes increments of 60 seconds until the maximum time of 15 minutes is calculated.
 
