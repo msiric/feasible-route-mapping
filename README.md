@@ -2,6 +2,8 @@
 
 Demo application accompanying the research done for my master's thesis.
 
+Live demo: https://feasible-route-mapping.herokuapp.com/
+
 ![Demo (1)](https://user-images.githubusercontent.com/26199969/173581085-8df371cd-db74-4d98-8098-08f2a9b524bc.gif)
 
 ## Introduction
