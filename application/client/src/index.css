@@ -1,3 +1,8 @@
+:root {
+  --leaflet-tile-filter: brightness(0.6) invert(1) contrast(3)
+    hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -112,4 +117,8 @@ code {
 .leaflet-pane .leaflet-shadow-pane .leaflet-zoom-animated .leaflet-interactive {
   filter: drop-shadow(-1px -2px 0px #000) drop-shadow(1px -1px 0px #000)
     drop-shadow(1px 2px 0px #000) drop-shadow(-1px 1px 0px #000);
+}
+
+.leaflet-tile {
+  filter: var(--leaflet-tile-filter, none);
 }
