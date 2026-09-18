@@ -4,7 +4,7 @@ services:
     runtime: docker
     plan: free
     region: frankfurt
-    branch: codex/restore-public-demo
+    branch: master
     autoDeployTrigger: off
     healthCheckPath: /healthz
     dockerfilePath: ./Dockerfile
