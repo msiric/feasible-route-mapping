@@ -41,7 +41,7 @@ Warm public route requests took approximately 0.07–0.19 seconds after the firs
 
 ## Source and release branches
 
-The restoration is merged into GitHub `master`. Render currently follows the retained `codex/restore-public-demo` branch with auto-deploy Off; merging source does not deploy it. For a future backend release from the default branch, deliberately update the existing demo service's source branch and `render.yaml` to `master`, then manually deploy a tested commit. Do not create another service.
+The restoration is merged into GitHub `master`. The existing Render service and `render.yaml` now both select `master`; auto-deploy and PR previews remain Off. Manually deploy a tested commit from this branch. Merging source alone does not deploy it. The old restoration branch is retained for history, and no duplicate service is needed. The branch alignment changed the source selector, not the currently running API version.
 
 Pages uses Direct Upload and its production label is **`codex/restore-public-demo`**, independently of the source checkout. Another `--branch` can create only a preview. Verify the root public URL and its asset names after upload. Markdown-only updates require no hosting deployment.
 
