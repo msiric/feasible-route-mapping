@@ -1,3 +1,4 @@
+import { DemoBar } from "../../demo/DemoBar";
 import classes from "@components/Menu/style.module.css";
 import { MenuActions } from "@components/MenuActions";
 import { useMenuOverlay } from "@contexts/menuOverlay";
@@ -18,6 +19,7 @@ export const MenuCard = () => {
       <Card variant="outlined">
         <MenuActions />
         <CardContent className={classes.content}>
+          <DemoBar />
           <IsochroneForm />
         </CardContent>
       </Card>

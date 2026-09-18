@@ -1,4 +1,4 @@
-import create, { GetState, SetState } from "zustand";
+import { create, GetState, SetState } from "zustand";
 
 export interface MenuOverlayState {
   visible: boolean;

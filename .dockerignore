@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/dist
+**/build
+**/.env*
+**/.wrangler
+infra
+container
+application/client

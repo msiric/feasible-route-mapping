@@ -1,3 +1,4 @@
+import { useDemo } from "../../demo/state";
 import classes from "@components/MenuActions/style.module.css";
 import { useIsochroneIntersections } from "@contexts/isochroneIntersections";
 import { useMenuOverlay } from "@contexts/menuOverlay";
@@ -36,7 +37,8 @@ export const MenuActions = () => {
 
   const { reset: resetValues } = useFormContext();
 
-  const isDisabled = shortestPathLoading || isochroneIntersectionsLoading;
+  const live=useDemo(state=>state.live);
+  const isDisabled = !live || shortestPathLoading || isochroneIntersectionsLoading;
 
   const resetCurrentState = () => {
     resetValues({ ...DEFAULT_FORM_VALUES });
@@ -63,6 +65,7 @@ export const MenuActions = () => {
       action={
         <>
           <IconButton
+            aria-label="Reset route"
             className={classes.reset}
             disabled={isDisabled}
             disableRipple
@@ -71,6 +74,7 @@ export const MenuActions = () => {
             <ResetIcon className={classes.icon} />
           </IconButton>
           <IconButton
+            aria-label="Restore previous route"
             className={classes.revert}
             disabled={isDisabled || !previousPath.length}
             disableRipple
@@ -83,6 +87,7 @@ export const MenuActions = () => {
               !isMenuVisible && classes.toggleHidden
             }`}
             disableRipple
+            aria-label="Toggle route controls"
             onClick={toggleMenuOverlay}
           >
             <ToggleIcon

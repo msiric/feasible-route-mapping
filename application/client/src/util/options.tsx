@@ -68,7 +68,8 @@ export type CostingOption = {
   locations: Location[];
   directions_options: { units: string };
   contours?: { time: number }[];
-  isochrone_type?: string;
+  reverse?: boolean;
+  polygons?: boolean;
   id?: string;
 };
 
@@ -121,7 +122,7 @@ export const TRANSPORTATION_MODE_PROPERTIES: TransportationModeOptions = {
 
 export const TIME_RANGE_OPTIONS = {
   min: 0,
-  max: 30,
+  max: 10,
 };
 
 export const TRANSPORTATION_MODE_OPTIONS: CostingOptions = {
@@ -328,5 +329,5 @@ export const applyTransportationMode = (
   exclude_locations: excludedLocations,
   time_range: timeRange,
   ...(contours ? { contours } : {}),
-  ...(isReversed ? { isochrone_type: "reverse" } : {}),
+  ...(contours ? { reverse: isReversed, polygons: true } : {}),
 });

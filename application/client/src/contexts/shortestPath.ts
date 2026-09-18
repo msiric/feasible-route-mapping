@@ -7,7 +7,7 @@ import {
 } from "@util/options";
 import { LatLngExpression } from "leaflet";
 import { FieldValues } from "react-hook-form";
-import create, { GetState, SetState } from "zustand";
+import { create, GetState, SetState } from "zustand";
 import hashObject from "object-hash";
 
 export interface PathSegments {
@@ -72,6 +72,9 @@ const initialState: ShortestPathState = {
   error: { retry: false, message: "" },
 };
 
+let activeRequest: AbortController | undefined;
+let requestGeneration = 0;
+
 const initState = () => ({
   ...initialState,
 });
@@ -84,7 +87,11 @@ const initActions = (
     options: CostingOption[],
     hash: string
   ): Promise<void> => {
+    activeRequest?.abort();
+    activeRequest = new AbortController();
+    const signal = activeRequest.signal, generation = ++requestGeneration;
     try {
+      if (options.length > 2) throw new Error("At most three locations are supported.");
       set((state) => ({
         ...state,
         data: { path: [], hash: "" },
@@ -92,7 +99,7 @@ const initActions = (
         error: { ...initialState.error },
       }));
       const shortestSegments = await Promise.all(
-        options.map(async (segment) => await fetchRoute(segment))
+        options.map(async (segment) => await fetchRoute(segment, signal))
       );
       const shortestPath: ShortestPathData[] = shortestSegments.map(
         ({ features, trip }, index) => ({
@@ -112,6 +119,7 @@ const initActions = (
         })
       );
 
+      if (generation !== requestGeneration) return;
       set((state) => ({
         ...state,
         data: { path: shortestPath, hash },
@@ -119,6 +127,7 @@ const initActions = (
         error: { ...initialState.error },
       }));
     } catch (err) {
+      if (signal.aborted || generation !== requestGeneration) return;
       const errorMessage = toErrorMessage(err);
       set((state) => ({
         ...state,
@@ -137,8 +146,8 @@ const initActions = (
           applyTransportationMode(
             values.options[i + 1].transportationMode,
             values.options[i + 1].timeRange,
-            options.map(({ location }) => location!),
-            values.excludeLocations
+            options.map(({ location }) => ({ ...location!, lat: Number(location!.lat), lon: Number(location!.lon) })),
+            values.excludeLocations.map((location: Location) => ({ ...location, lat: Number(location.lat), lon: Number(location.lon) }))
           )
         );
       }
@@ -154,6 +163,7 @@ const initActions = (
     }));
   },
   resetShortestPath: () => {
+    activeRequest?.abort(); requestGeneration++;
     set({ ...initialState });
   },
 });

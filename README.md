@@ -1,56 +1,57 @@
-# Feasible Route Mapping
+# Feasible route mapping
 
-Demo application accompanying the research done for my master's thesis.
+An interactive exploration of where a journey could pass when it has extra travel time. Choose an origin, destination, optional waypoint, travel mode and time allowance; compare the reference route with colored feasible areas.
 
-Live demo: https://feasible-route-mapping.herokuapp.com/
+The restored portfolio demo uses **South Australia** routing data and six modes: car, bicycle, pedestrian, truck, bus and motor scooter. Bus means road routing for a bus, not public transport schedules. Search bundled Adelaide landmarks, drag markers, or right-click the map to choose locations and roads to avoid.
 
-![Demo (1)](https://user-images.githubusercontent.com/26199969/173581085-8df371cd-db74-4d98-8098-08f2a9b524bc.gif)
+**[Open the live demo](https://feasible-route-mapping-demo.pages.dev).** The bundled example opens immediately; choose “Try live routing” for real calculations. The live Render Free API passed all six modes, fractional contours up to 40 minutes, exclusions, zero-extra-time calculations and full feasible-region generation. Hosting uses isolated `msiric-public-demos` projects on Cloudflare Pages Free and Render Free; no paid infrastructure is required. See [deployment details](DEPLOYMENT.md).
 
-## Introduction
+## What the map means
 
-When examining timestamped geolocation data, it is often useful to determine feasible routes which could be taken from one location to another.
+For each route segment, the target is approximately:
 
-For criminal investigation, a heat map of reachable regions in a specific time period would support investigators with a means to rapidly evaluate the context of movement in and around a crime.
+`travel(origin, point) + travel(point, destination) ≤ reference route duration + extra time`
 
-## Goals and motivation
+```mermaid
+flowchart LR
+  A[Origin: forward travel-time contours] --> I[Intersect complementary time budgets]
+  B[Destination: reverse travel-time contours] --> I
+  I --> U[Union each allowance level]
+  U --> M[Map with holes and disconnected areas preserved]
+```
 
-The main goal of this thesis is to build an algorithm that is capable of finding all the areas that a suspect could have reached while en route between points in a set time frame, taking into account time and mode of transportation constraints.
+Valhalla computes the reference route using the original mode-specific preferences. Its duration is not guaranteed to be the absolute minimum travel time. The colored areas use one-minute time splits and 20 m geometric generalization; they are an approximation, can omit narrow corridors, and can be truncated at the regional boundary. Road restrictions and turn penalties also limit geometric equivalence. This portfolio demonstration is not navigation or safety advice and does not include live traffic.
 
-This is accomplished by utilising OpenStreetMap as a map data provider, Leaflet as an open-source library for mobile-friendly interactive maps, and Valhalla as an open-source routing engine.
+The demo allows two or three locations, up to eight road exclusions, and a maximum 40-minute budget per segment including zero to ten extra minutes. Each segment's endpoints must be within 40 km straight-line distance. These bounds keep interactive use practical on a small sleeping server.
 
-One of the key features of Valhalla that made this research possible is the concept of isochrones.
+## Restoration changes
 
-An isochrone is a line that connects points of equal travel time about a given location, from the Greek roots of “iso” for equal and “chrone” for time. Valhalla's isochrone service computes areas that are reachable within specified time intervals from a location and returns the reachable regions as contours of polygons or lines that can be displayed on a map.
+- Destination expansion uses the supported `reverse: true` API flag. The legacy `isochrone_type` parameter did not request reverse expansion.
+- Requests explicitly ask for polygons and retain holes and disconnected components. Contours are batched four at a time and reused across allowance levels.
+- Fractional route durations, zero extra time and sub-minute routes are handled without negative array sizes or shifted contour indices.
+- Polygon work runs in a cancellable browser worker. Changed inputs cancel stale requests, and progress/error messages explain the free server's limits.
+- Vite replaces the retired Create React App toolchain. The public gateway validates inputs and bounds requests, responses, cache memory, concurrency and rate.
+- A pinned map extract is built into the container image. Startup performs no graph build or map download. No keep-alive job is used.
 
-## Results
+## Develop locally
 
-Journey's locations, time ranges and modes of transportation are provided by the user. The journey is broken into a sequence of segments: (x<sub>i</sub>, t<sub>i</sub>) to (x<sub>i+1</sub>, t<sub>i+1</sub>).
+Use Node 22.13 or newer in the Node 22 series, and Docker for the routing engine:
 
-Valhalla’s routing engine is used to calculate the shortest journey between x<sub>i</sub> and x<sub>i+1</sub>, taking into account the specified mode of transportation. This is the minimum feasible journey time t<sub>min</sub>. 
+```sh
+npm --prefix application ci
+npm --prefix application/client ci
+docker build -t feasible-route-demo .
+docker run --rm --name feasible-route-demo -p 127.0.0.1:5076:10000 -e PORT=10000 -e NODE_ENV=development feasible-route-demo
+```
 
-Using the provided timestamp data, the maximum journey time is calculated for this segment t<sub>max</sub> = t<sub>i+1</sub> - t<sub>i</sub> since it is guaranteed that the journey does not take any longer than this to be traversed. 
+In another terminal, run `npm --prefix application/client start` and open the printed localhost URL. Local development skips the production proxy authentication; keep the Docker port bound to loopback as shown.
 
-Valhalla’s isochrone calculation is exploited to return the data for each segment of the journey (each pair defined as origin x<sub>i</sub> and destination x<sub>i+1</sub>). Isochrones are calculated for the first point x<sub>i</sub>, defined as an origin isochrone, with the range set to t<sub>min</sub> and the interval step set to 60 seconds up until it reaches t<sub>max</sub>. This means that if the minimum time to reach x<sub>i+1</sub> from x<sub>i</sub> is 10 minutes and the maximum time is 15 minutes, isochrones will be calculated for x<sub>i</sub> starting with 10 minutes increments of 60 seconds until the maximum time of 15 minutes is calculated.
+Run `npm --prefix application test`, `npm --prefix application/client run typecheck`, and `npm --prefix application/client run build`. The public CI workflow also builds and exercises the actual image with 512 MB memory and 0.1 CPU limits. It exports a public synthetic example through CI logs without storing paid artifacts, publishing images, or accessing production credentials.
 
-This process is repeated for the second point x<sub>i+1</sub>, with the exception that this position is defined as a destination isochrone. This finalizes the first segment of the journey. This keeps going until each segment is processed and all the isochrones for each point are saved.
+## Data, attribution and privacy
 
-The isochrones are returned as a list of coordinates which form polygons (areas that could be reached in the specified time range).
+Map and routing data © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), licensed under ODbL 1.0. The pinned, unchanged [Geofabrik South Australia extract](https://download.geofabrik.de/australia-oceania/australia/south-australia.html) and its checksum are documented in [DATA.md](deployment/DATA.md). Routing uses [Valhalla](https://github.com/valhalla/valhalla); polygon calculations use [Turf](https://turfjs.org/).
 
-For each pair, an intersection of polygons is calculated starting from the isochrone with the minimum interval step for x<sub>i</sub> and the isochrone with the maximum interval step for x<sub>i+1</sub>. For each subsequent calculation, the interval step is incremented for x<sub>i</sub> and decremented for x<sub>i+1</sub> until we exhaust all of the isochrones for both positions.
+Landmark search is local; it does not call Nominatim. Live calculations send selected coordinates to the demo server. Basemap browsing loads ordinary, cached OpenStreetMap tiles with attribution and no offline prefetch. No account, location permission or analytics is required. The hosting providers receive normal request metadata.
 
-All of the intersecting polygons are overlayed to show the possible reach of the journey constrained to each interval step.
-
-The result is a visualisation of all the potentially reachable areas with the hottest (colored in shades of red) ones having a minimum deviation and the coolest (colored in shades of green) ones having a maximum deviation from the shortest journey.
-
-The algorithm is also capable of excluding certain routes from the calculation of both the shortest path and the isochrones for any position that is affected by said routes. This is significant since it is often easier to conclude that a suspect hasn’t traversed a specific route than it is to confirm that a route has been crossed by a suspect (surveillance footage discounting a route, roadblock preventing passage, etc.).
-
-## Implementation
-
-The application is composed of a client application and a containerised server.
-The client application is written in TypeScript using React with a Node.js wrapper while the server is running as a Docker image bootstrapped by the [GIS OPS](https://github.com/gis-ops/docker-valhalla) organisation.
-
-In order for the server to compute and return direction and isochrone information, map data needs to be downloaded in the `.osm.pbf` format.
-
-Afterwards, tile information needs to be built using said data to generate a graph structure and make the map usable for routing and isochrone calculation.
-
-The client consumes the server logic via a REST API and handles the computation of polygon intersections and the subsequent heat map visualisation.
+The original `container/` directory remains as historical infrastructure reference. The repository-root Dockerfile and [DEPLOYMENT.md](DEPLOYMENT.md) define the restored deployment.
