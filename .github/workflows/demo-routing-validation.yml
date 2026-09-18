@@ -1,8 +1,9 @@
 name: Validate free routing demo
 on:
   push:
-    branches: [codex/restore-public-demo]
-    paths: ['Dockerfile', 'deployment/**', 'application/demo/**', 'application/app.ts', 'application/package*.json', 'application/scripts/**', '.github/workflows/demo-routing-validation.yml']
+    branches: [master, codex/restore-public-demo]
+    paths: ['Dockerfile', 'deployment/**', 'application/demo/**', 'application/app.ts', 'application/package*.json', 'application/scripts/**', 'application/client/**', 'functions/**', '.github/workflows/demo-routing-validation.yml']
+  pull_request:
   workflow_dispatch:
 permissions:
   contents: read
