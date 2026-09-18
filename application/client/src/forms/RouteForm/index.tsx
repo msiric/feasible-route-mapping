@@ -165,7 +165,7 @@ export const IsochroneForm = () => {
     if (shortestPathLoading) {
       return <CircularProgress size={15} />;
     }
-    const pathDuration: string | number = shortestPathError.retry
+    const pathDuration: string | number = shortestPathError.retry || !shortestPath.length
       ? "N/A"
       : formatSegmentDuration(
           index
@@ -176,7 +176,7 @@ export const IsochroneForm = () => {
               ),
           2
         );
-    const availableTime: string | number = shortestPathError.retry
+    const availableTime: string | number = shortestPathError.retry || !shortestPath.length
       ? "N/A"
       : formatSegmentDuration(
           index
@@ -332,7 +332,12 @@ export const IsochroneForm = () => {
           </Box>
         </List>
         {progress && <Typography role="status" variant="body2">{progress}</Typography>}
-        {live && isDisabled && <Button onClick={() => { useShortestPath.getState().resetShortestPath(); resetIsochroneIntersections(); }}>Cancel</Button>}
+        {live && isDisabled && <Button onClick={() => {
+          const route = useShortestPath.getState();
+          if (route.loading) route.resetShortestPath();
+          resetIsochroneIntersections();
+          useIsochroneIntersections.setState({progress: "Calculation cancelled. The reference route is retained when available."});
+        }}>Cancel</Button>}
         <Box className={classes.actions}>
           <Button
             color="primary"
