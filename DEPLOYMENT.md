@@ -15,7 +15,7 @@ Parent: `msiric-public-demos`. This project has no database, payment provider, o
 `npm --prefix application test` checks the real gateway with controlled upstream responses and polygon calculations.
 `npm --prefix application/client run typecheck` and `npm --prefix application/client run build` validate the frontend.
 
-A real hosted-engine smoke test, public browser test, and generated bundled example are required before declaring the deployment complete. Docker on the local development machine was unresponsive during restoration; no unrelated containers or Docker settings were changed.
+The public GitHub Actions workflow builds and tests the real image on a standard free runner with 512 MB / 0.1 CPU limits. It exports the small public sample through logs, without paid artifact storage. Real-engine success, a Render cold-start check and public browser tests are required before declaring the deployment complete. Docker on the local development machine was unresponsive during restoration; no unrelated containers or Docker settings were changed.
 
 ## Accuracy
 
