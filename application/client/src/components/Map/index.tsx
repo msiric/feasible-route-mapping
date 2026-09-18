@@ -1,3 +1,4 @@
+import { useDemo } from "../../demo/state";
 import classes from "@components/Map/style.module.css";
 import { MapMarker, MarkerType } from "@components/Marker";
 import { MapPopup } from "@components/Popup";
@@ -12,7 +13,7 @@ import {
   SouthAmerica as AreaIcon,
 } from "@mui/icons-material";
 import { Box, Typography } from "@mui/material";
-import { Properties } from "@turf/turf";
+import { GeoJsonProperties as Properties } from "geojson";
 import { formatLocation } from "@util/geometry";
 import {
   TransportationModeOption,
@@ -24,7 +25,7 @@ import { useFormContext } from "react-hook-form";
 import {
   LayerGroup,
   MapContainer,
-  Polygon,
+  GeoJSON,
   Polyline,
   TileLayer,
   ZoomControl,
@@ -32,7 +33,7 @@ import {
 import { Location, Option, ShortestPathData } from "@contexts/shortestPath";
 
 const MAP_CENTER_COORDINATES: LatLngExpression = [-34.92877, 138.599957];
-const LEAFLET_TILES_URL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+const LEAFLET_TILES_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 const POLYGON_TOOLTIP_OPTIONS = (regionProperties: Properties) => [
   {
@@ -51,7 +52,7 @@ const POLYGON_TOOLTIP_OPTIONS = (regionProperties: Properties) => [
     element: (
       <Typography
         className={classes.tooltipLabel}
-      >{`${regionProperties?.contour} min`}</Typography>
+      >{`+${regionProperties?.contour} min extra (${regionProperties?.totalMinutes?.toFixed(1)} min total)`}</Typography>
     ),
   },
   {
@@ -103,31 +104,12 @@ const Intersections = memo(() => {
 
   return (
     <LayerGroup>
-      {isochroneIntersections.map((intersection, index) => {
-        const reversedCoordinates = intersection.geometry.coordinates.map(
-          (coordinate) => [
-            (coordinate as LatLngExpression[])[1],
-            (coordinate as LatLngExpression[])[0],
-          ]
-        );
-        return (
-          <Polygon
-            key={`${intersection.properties?.area}.${index}`}
-            pathOptions={{
-              color: intersection.properties?.color,
-              fill: true,
-              fillColor: intersection.properties?.color,
-              fillOpacity: 1 / intersection.properties?.contour,
-            }}
-            positions={reversedCoordinates}
-          >
-            <MapTooltip
-              sticky={true}
-              options={POLYGON_TOOLTIP_OPTIONS(intersection.properties)}
-            />
-          </Polygon>
-        );
-      })}
+      {isochroneIntersections.map((intersection, index) => (
+        <GeoJSON key={`${intersection.properties?.area}.${index}`} data={intersection}
+          style={{color: intersection.properties?.color, fillColor: intersection.properties?.color, fillOpacity:0.3, weight:1}}>
+          <MapTooltip sticky options={POLYGON_TOOLTIP_OPTIONS(intersection.properties)} />
+        </GeoJSON>
+      ))}
     </LayerGroup>
   );
 });
@@ -226,6 +208,8 @@ const Route = memo(() => {
 });
 
 const Markers = () => {
+  const live=useDemo(state=>state.live);
+  const busy=useIsochroneIntersections(state=>state.loading);
   const { getValues, setValue, watch } = useFormContext();
 
   const values = watch();
@@ -281,7 +265,7 @@ const Markers = () => {
                 key={`${item.location.lat}.${item.location.lon}`}
                 index={index}
                 position={item.location}
-                isDraggable={true}
+                isDraggable={live && !busy}
                 label={index + 1}
                 handleMarkerShift={handleLocationShift}
               />
@@ -297,7 +281,7 @@ const Markers = () => {
                 type={MarkerType.EXCLUSION}
                 index={index}
                 position={location}
-                isDraggable={true}
+                isDraggable={live && !busy}
                 handleMarkerShift={handleExclusionShift}
               />
             )
@@ -314,7 +298,7 @@ export const Map = memo(() => {
       zoom={13}
       zoomControl={false}
       center={MAP_CENTER_COORDINATES}
-      style={{ height: "100vh", width: "100wh" }}
+      style={{ height: "100vh", width: "100vw" }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: feasible-route-mapping-demo-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: codex/restore-public-demo
+    autoDeployTrigger: off
+    healthCheckPath: /healthz
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: CLIENT_URI
+        value: https://feasible-route-mapping-demo.pages.dev
+      - key: DEMO_PROXY_SECRET
+        sync: false
