@@ -1,11 +1,22 @@
 .container {
-  max-height: 325px;
-  overflow-y: auto;
+  overflow: visible;
+}
+
+.fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.fields[data-sample="true"] :global(.MuiInputBase-input.Mui-disabled) {
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.72);
 }
 
 .itemOptions {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
   width: 100%;
 }
 
@@ -27,11 +38,8 @@
 }
 
 .listWrapper .deleteAction {
-  top: 50%;
-  -webkit-transform: translateY(-55%);
-  -moz-transform: translateY(-55%);
-  -ms-transform: translateY(-55%);
-  transform: translateY(-55%);
+  top: 24px;
+  transform: translateY(-50%);
 }
 
 .listItem {
@@ -41,25 +49,48 @@
 }
 
 .listItemPadding {
-  padding-right: 33px;
+  padding-right: 30px;
 }
 
 .actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.actions button {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.addAction {
   display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
+  align-items: center;
+  gap: 12px;
+}
+
+.addAction button {
+  flex: 1;
+}
+
+.locationCount {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
 }
 
 .controlContainer {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
 }
 
 .controlWrapper {
   display: flex;
   flex-direction: column;
+  align-self: flex-start;
+  margin-top: 5px;
   min-width: 30px;
 }
 
@@ -77,39 +108,41 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
 .excludeLocations {
-  margin-top: 8px;
+  margin-top: 16px;
 }
 
 .duration {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  text-align: center;
-}
-
-.spacer {
-  width: 100%;
-  margin: 4px 0;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .durationLabel {
-  font-size: 10px;
-  letter-spacing: -0.4px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.durationSeparator {
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .totalDuration {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
 }
 
-.partition {
-  margin: 0 8px;
-  height: 10px;
+@media (max-width: 340px) {
+  .itemOptions { grid-template-columns: minmax(0, 1fr); gap: 16px; }
 }

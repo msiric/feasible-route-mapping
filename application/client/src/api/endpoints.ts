@@ -1,4 +1,4 @@
-import axios from "axios";
+import { requestRouting } from '../demo/requests.mjs';
 import { parseGeometry } from "@util/geometry";
 import { LatLngExpression } from "leaflet";
 import { CostingOption } from "@util/options";
@@ -57,32 +57,7 @@ export interface ShortestSegment {
   features: LatLngExpression[];
 }
 
-export interface IsochroneProperties {
-  fill: string;
-  fillOpacity: number;
-  "fill-opacity": number;
-  fillColor: string;
-  color: string;
-  contour: number;
-  opacity: number;
-  metric: string;
-}
-
-export interface IsochroneGeometry {
-  coordinates: LatLngExpression[];
-}
-
-export interface Isochrone {
-  id?: string;
-  type: string;
-  features: [
-    {
-      properties: IsochroneProperties;
-      geometry: IsochroneGeometry;
-      type: string;
-    }
-  ];
-}
+export type Isochrone = import('geojson').FeatureCollection<import('geojson').Polygon | import('geojson').MultiPolygon>;
 
 export interface Address {
   place_id: number;
@@ -99,38 +74,25 @@ export interface Address {
   icon: string;
 }
 
-export const fetchAddress = async (location: string): Promise<Address[]> => {
-  const { data } = await axios.get(
-    `https://nominatim.openstreetmap.org/search?q=${location}&format=json&limit=5`
-  );
-  return data;
-};
+// Bundled landmarks avoid sending keystrokes to a public geocoder.
+const places = [
+  ['Adelaide Town Hall', -34.9253, 138.5998],
+  ['Art Gallery of South Australia', -34.9210, 138.6040],
+  ['Adelaide Railway Station', -34.9210, 138.5965],
+  ['Adelaide Oval', -34.9155, 138.5960],
+  ['Adelaide Central Market', -34.9297, 138.5980],
+  ['Adelaide Botanic Garden', -34.9194, 138.6114],
+  ['Rundle Mall', -34.9225, 138.6020],
+  ['Glenelg Jetty', -34.9800, 138.5110],
+  ['Port Adelaide', -34.8460, 138.5030],
+  ['Norwood', -34.9210, 138.6350],
+  ['Unley', -34.9500, 138.6070],
+] as const;
+export const fetchAddress = async (query: string): Promise<Address[]> => places
+  .filter(([name]) => name.toLowerCase().includes(query.trim().toLowerCase()))
+  .map(([display_name,lat,lon],index) => ({display_name,lat:String(lat),lon:String(lon),place_id:index, type:'landmark'} as Address));
 
-export const fetchRoute = async (
-  params: CostingOption
-): Promise<ShortestSegment> => {
-  const { data } = await axios.get("/api/route", {
-    params: {
-      json: params,
-    },
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  data.features = parseGeometry(data);
-  return data;
+export const fetchRoute = async (params: CostingOption, signal?: AbortSignal, onWait?: (seconds: number) => void): Promise<ShortestSegment> => {
+  const data = await requestRouting('route',params,{signal,onWait}); data.features=parseGeometry(data); return data;
 };
-
-export const fetchIsochrone = async (
-  params: CostingOption
-): Promise<Isochrone> => {
-  const { data } = await axios.get("/api/isochrone", {
-    params: {
-      json: params,
-    },
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-  return data;
-};
+export const fetchIsochrone = (params: CostingOption, signal?: AbortSignal, onWait?: (seconds: number) => void): Promise<Isochrone> => requestRouting('isochrone',params,{signal,onWait});

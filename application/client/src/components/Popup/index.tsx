@@ -1,3 +1,6 @@
+import { MAX_LOCATIONS } from '../../demo/requests.mjs';
+import { useDemo } from "../../demo/state";
+import { useIsochroneIntersections } from "@contexts/isochroneIntersections";
 import { SplitButton, SplitButtonOption } from "@components/SplitButton";
 import { Box, Button } from "@mui/material";
 import { formatLocation } from "@util/geometry";
@@ -39,6 +42,7 @@ export const MapPopup = () => {
 
   useMapEvents({
     contextmenu(e) {
+      if(!useDemo.getState().live || useIsochroneIntersections.getState().loading)return;
       const { lat, lon } = formatLocation(e.latlng);
 
       handlePositionChange({ lat, lon });
@@ -52,6 +56,7 @@ export const MapPopup = () => {
 
   const handlePrependLocation = () => {
     const values = getValues();
+    if(values.options.length >= MAX_LOCATIONS) return;
     setValue("options", [
       {
         location: {
@@ -94,6 +99,7 @@ export const MapPopup = () => {
 
   const handleAppendLocation = () => {
     const values = getValues();
+    if(values.options.length >= MAX_LOCATIONS) return;
     setValue("options", [
       ...values.options,
       {
@@ -110,6 +116,7 @@ export const MapPopup = () => {
 
   const handleExcludeLocation = () => {
     const values = getValues();
+    if(values.excludeLocations.length >= 8) return;
     setValue("excludeLocations", [
       ...values.excludeLocations,
       {
@@ -141,6 +148,7 @@ export const MapPopup = () => {
           variant="text"
           size="small"
           startIcon={<AddOriginIcon style={{ ...buttonStyles }} />}
+          disabled={values.options.length >= MAX_LOCATIONS}
           onClick={handlePrependLocation}
         >
           Prepend location
@@ -150,6 +158,7 @@ export const MapPopup = () => {
           variant="text"
           size="small"
           startIcon={<AddDestinationIcon style={{ ...buttonStyles }} />}
+          disabled={values.options.length >= MAX_LOCATIONS}
           onClick={handleAppendLocation}
         >
           Append location
@@ -159,6 +168,7 @@ export const MapPopup = () => {
           variant="text"
           size="small"
           startIcon={<ExcludeLocationIcon style={{ ...buttonStyles }} />}
+          disabled={values.excludeLocations.length >= 8}
           onClick={handleExcludeLocation}
         >
           Exclude location

@@ -1,206 +1,58 @@
-import { fetchIsochrone, Isochrone } from "@api/endpoints";
-import { Location } from "@contexts/shortestPath";
-import { Feature, Geometry, Position } from "@turf/turf";
-import { toErrorMessage } from "@util/error";
-import { calcArea, calcIntersection } from "@util/geometry";
-import { applyTransportationMode, TransportationMode } from "@util/options";
-import create, { GetState, SetState } from "zustand";
-import { ShortestPathData } from "@contexts/shortestPath";
-
-export type IsochroneIntersectionsData = Feature<Geometry> & {
-  order?: number;
-};
-
-export interface IsochroneIntersectionsError {
-  retry: boolean;
-  message: string;
+import { MAX_LOCATIONS } from '../demo/requests.mjs';
+import { fetchIsochrone } from '@api/endpoints';
+import { ShortestPathData } from '@contexts/shortestPath';
+import { Feature, Polygon, MultiPolygon } from 'geojson';
+import { applyTransportationMode } from '@util/options';
+import { createPlan } from '../demo/calculation.mjs';
+import { create } from 'zustand';
+export type IsochroneIntersectionsData = Feature<Polygon | MultiPolygon>;
+let controller: AbortController | undefined;
+let worker: Worker | undefined;
+let generation=0;
+interface State {
+  data: IsochroneIntersectionsData[]; loading:boolean; progress:string;
+  error:{retry:boolean;message:string};
+  findIsochroneIntersections:(path:ShortestPathData[])=>Promise<void>;
+  resetIsochroneIntersections:()=>void;
 }
-
-export interface IsochroneIntersectionsState {
-  data: IsochroneIntersectionsData[];
-  loading: boolean;
-  error: IsochroneIntersectionsError;
-}
-
-export interface IsochroneIntersectionsActions {
-  fetchSegmentIsochrones: (
-    locations: Location[],
-    duration: number,
-    range: number,
-    transportationMode: TransportationMode,
-    excludedLocations: Location[]
-  ) => Promise<Isochrone[][]>;
-  findIsochroneIntersections: (path: ShortestPathData[]) => Promise<void>;
-  resetIsochroneIntersections: () => void;
-}
-
-export type IsochroneIntersectionsContext = IsochroneIntersectionsState &
-  IsochroneIntersectionsActions;
-
-const getColor = (value: number) => {
-  const hue = ((1 - value) * 120).toString(10);
-  return ["hsl(", hue, ",100%,50%)"].join("");
-};
-
-const formatIntersection = (
-  coordinate: Position[][],
-  intervals: number,
-  counter: number
-): IsochroneIntersectionsData => {
-  const coordinates = coordinate.flat();
-  const areaColor = getColor((intervals - counter + 1) / intervals);
-  return {
-    type: "Feature",
-    geometry: {
-      coordinates,
-      type: "Polygon",
-    },
-    properties: {
-      stroke: true,
-      fill: true,
-      fillColor: areaColor,
-      color: areaColor,
-      contour: intervals - counter + 1,
-      area: calcArea(coordinates) || 0,
-    },
-    order: counter,
-  };
-};
-
-const initialState: IsochroneIntersectionsState = {
-  data: [],
-  loading: false,
-  error: { retry: false, message: "" },
-};
-
-const initState = () => ({
-  ...initialState,
-});
-
-const initActions = (
-  set: SetState<IsochroneIntersectionsContext>,
-  get: GetState<IsochroneIntersectionsContext>
-) => ({
-  fetchSegmentIsochrones: async (
-    locations: Location[],
-    duration: number,
-    range: number,
-    transportationMode: TransportationMode,
-    excludedLocations: Location[]
-  ): Promise<Isochrone[][]> => {
+export const useIsochroneIntersections=create<State>((set)=>({
+  data:[], loading:false, progress:'',error:{retry:false,message:''},
+  resetIsochroneIntersections:()=>{
+    generation++;controller?.abort();worker?.terminate();worker=undefined;
+    set({data:[],loading:false,progress:'',error:{retry:false,message:''}});
+  },
+  findIsochroneIntersections:async(path)=>{
+    controller?.abort();worker?.terminate();controller=new AbortController();
+    const signal=controller.signal, current=++generation;
+    set({loading:true,data:[],progress:'Requesting travel-time contours…',error:{retry:false,message:''}});
     try {
-      set((state) => ({
-        ...state,
-        data: [],
-        loading: true,
-        error: { ...initialState.error },
-      }));
-      const totalTime = duration + range;
-      const upperBound = (totalTime - (totalTime % 60) - 60) / 60;
-      const intervalSteps = Array(upperBound)
-        .fill(1)
-        .map((item, index) => (index + item) * 60);
-      return await Promise.all(
-        intervalSteps.map(
-          async (time) =>
-            await Promise.all(
-              locations.map(async (location, index) => {
-                const params = applyTransportationMode(
-                  transportationMode,
-                  range,
-                  [location],
-                  excludedLocations,
-                  index !== 0,
-                  [{ time: time / 60 }]
-                );
-                return fetchIsochrone(params);
-              })
-            )
-        )
-      );
-    } catch (err) {
-      const errorMessage = toErrorMessage(err);
-      set((state) => ({
-        ...state,
-        loading: false,
-        error: { retry: true, message: errorMessage },
-      }));
-      return [];
-    }
-  },
-  findIsochroneIntersections: async (
-    path: ShortestPathData[]
-  ): Promise<void> => {
-    const fetchSegmentIsochrones = get().fetchSegmentIsochrones;
-    const isochrones = await Promise.all(
-      path.map(
-        async (segment) =>
-          await fetchSegmentIsochrones(
-            segment.locations,
-            segment.duration,
-            segment.timeRange ?? 0,
-            segment.transportationMode,
-            segment.excludedLocations ?? []
-          )
-      )
-    );
-    const intersections: IsochroneIntersectionsData[] = [];
-    for (const [index, segment] of path.entries()) {
-      const intervals = (segment.timeRange - (segment.timeRange % 60)) / 60;
-      for (let counter = 1; counter <= intervals; counter++) {
-        let start = 0;
-        let end = isochrones[index].length - counter;
-        while (end >= 0) {
-          const originCoordinates =
-            isochrones[index][start][0].features[0].geometry.coordinates;
-          const destinationCoordinates =
-            isochrones[index][end][1].features[0].geometry.coordinates;
-          const calculation = calcIntersection(
-            originCoordinates as Position[],
-            destinationCoordinates as Position[]
-          );
-          if (calculation?.geometry?.coordinates) {
-            if (calculation.geometry.type === "MultiPolygon") {
-              calculation.geometry.coordinates.forEach((coordinate) => {
-                const intersection = formatIntersection(
-                  coordinate as Position[][],
-                  intervals,
-                  counter
-                );
-                intersections.push(intersection);
-              });
-            } else {
-              const intersection = formatIntersection(
-                calculation.geometry.coordinates as Position[][],
-                intervals,
-                counter
-              );
-              intersections.push(intersection);
-            }
-          }
-          start++;
-          end--;
+      if(!path.length || path.length>=MAX_LOCATIONS)throw new Error(`Choose two to ${MAX_LOCATIONS} locations first.`);
+      const results:IsochroneIntersectionsData[]=[];
+      for(const [segmentIndex,segment] of path.entries()) {
+        const plan=createPlan(segment.duration,segment.timeRange||0);
+        const contours:Feature<Polygon|MultiPolygon>[][]=[[],[]];
+        const batches=plan.forward.length+plan.reverse.length; let completed=0;
+        for(const [direction,groups] of [plan.forward,plan.reverse].entries()) for(const times of groups) {
+          if(signal.aborted)throw new DOMException('Cancelled','AbortError');
+          set({progress:`Segment ${segmentIndex+1}/${path.length} · contour batch ${++completed}/${batches}`});
+          const params=applyTransportationMode(segment.transportationMode,0,[segment.locations[direction]],segment.excludedLocations||[],direction===1,times.map((time:number)=>({time})));
+          const response=await fetchIsochrone(params,signal,seconds=>{if(current===generation)set({progress:`Segment ${segmentIndex+1}/${path.length} · server busy, retrying in ${seconds}s…`});}); contours[direction].push(...response.features);
         }
+        set({progress:`Segment ${segmentIndex+1}/${path.length} · intersecting travel-time areas…`});
+        const shapes=await new Promise<IsochroneIntersectionsData[]>((resolve,reject)=>{
+          worker=new Worker(new URL('../demo/calculation.worker.ts',import.meta.url),{type:'module'});
+          const currentWorker=worker;
+          const abort=()=>{currentWorker.terminate();reject(new DOMException('Cancelled','AbortError'));};
+          signal.addEventListener('abort',abort,{once:true});
+          currentWorker.onmessage=({data})=>{signal.removeEventListener('abort',abort);currentWorker.terminate();data.error?reject(new Error(data.error)):resolve(data.result);};
+          currentWorker.onerror=()=>{signal.removeEventListener('abort',abort);currentWorker.terminate();reject(new Error('Unable to calculate these polygons. Try a smaller time allowance.'));};
+          currentWorker.postMessage({plan,forward:contours[0],reverse:contours[1]});
+        });
+        results.push(...shapes);
       }
+      if(current===generation)set({data:results,loading:false,progress:results.length?'':'No area found at this sampling resolution. Try one extra minute.'});
+    } catch(error) {
+      if(current===generation && !signal.aborted)set({loading:false,progress:'',error:{retry:true,message:(error as Error).message}});
     }
-    const sortedIntersections = intersections.sort(
-      (a, b) => a.order! - b.order!
-    );
-    set((state) => ({
-      ...state,
-      data: sortedIntersections,
-      loading: false,
-      error: { ...initialState.error },
-    }));
-  },
-  resetIsochroneIntersections: () => {
-    set({ ...initialState });
-  },
-});
-
-export const useIsochroneIntersections = create<IsochroneIntersectionsContext>(
-  (set, get) => ({
-    ...initState(),
-    ...initActions(set, get),
-  })
-);
+  }
+}));

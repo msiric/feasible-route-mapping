@@ -2,7 +2,6 @@
   "name": "feasible-route-mapping-client",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000",
   "dependencies": {
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
@@ -10,23 +9,10 @@
     "@mui/icons-material": "^5.6.0",
     "@mui/lab": "^5.0.0-alpha.81",
     "@mui/material": "^5.6.0",
-    "@testing-library/jest-dom": "^5.14.1",
-    "@testing-library/react": "^12.0.0",
-    "@testing-library/user-event": "^13.2.1",
-    "@turf/turf": "^6.5.0",
-    "@types/autosuggest-highlight": "^3.2.0",
-    "@types/jest": "^27.0.1",
-    "@types/leaflet": "^1.7.9",
-    "@types/lodash.throttle": "^4.1.7",
-    "@types/node": "^16.7.13",
-    "@types/object-hash": "^2.2.1",
-    "@types/react": "18.0.8",
-    "@types/react-dom": "18.0.3",
+    "@turf/turf": "^7.3.4",
     "autosuggest-highlight": "^3.2.1",
-    "axios": "^0.27.2",
-    "craco": "^0.0.3",
-    "craco-alias": "^3.0.1",
-    "leaflet": "^1.7.1",
+    "axios": "^1.12.2",
+    "leaflet": "^1.9.4",
     "lodash.throttle": "^4.1.1",
     "notistack": "^2.0.4",
     "object-hash": "^3.0.0",
@@ -34,26 +20,14 @@
     "react-dom": "^17.0.2",
     "react-hook-form": "^7.30.0",
     "react-leaflet": "^3.2.5",
-    "react-scripts": "5.0.0",
-    "typescript": "^4.4.2",
-    "web-vitals": "^2.1.0",
     "yup": "^0.32.11",
-    "zustand": "^4.0.0-rc.1"
+    "zustand": "^4.5.7"
   },
   "scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "craco eject",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint src",
-    "lint:fix": "eslint --fix src"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "start": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host 127.0.0.1"
   },
   "browserslist": {
     "production": [
@@ -66,5 +40,19 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^8.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@types/react": "^17.0.89",
+    "@types/react-dom": "^17.0.26",
+    "@types/leaflet": "^1.9.21",
+    "@types/lodash.throttle": "^4.1.9",
+    "@types/object-hash": "^3.0.6",
+    "@types/geojson": "^7946.0.16"
+  },
+  "engines": {
+    "node": ">=22.13 <23"
   }
 }

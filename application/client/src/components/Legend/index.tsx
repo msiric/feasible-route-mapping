@@ -43,11 +43,11 @@ export const LegendCard = () => {
                 <Box className={classes.gradient} />
                 <Box className={classes.annotation}>
                   <Typography className={classes.label}>
-                    Largest interval step
+                    Less extra time
                   </Typography>
                   <DirectionIcon className={classes.icon} />
                   <Typography className={classes.label}>
-                    Smallest interval step
+                    More extra time
                   </Typography>
                 </Box>
               </Box>

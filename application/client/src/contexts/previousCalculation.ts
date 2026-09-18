@@ -1,6 +1,6 @@
 import { TransportationMode } from "@util/options";
 import { LatLngExpression } from "leaflet";
-import create, { GetState, SetState } from "zustand";
+import { create, GetState, SetState } from "zustand";
 import { Location } from "@contexts/shortestPath";
 import { FieldValues } from "react-hook-form";
 import hashObject from "object-hash";

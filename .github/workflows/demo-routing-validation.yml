@@ -1,0 +1,47 @@
+name: Validate free routing demo
+on:
+  push:
+    branches: [master]
+    paths: ['Dockerfile', 'deployment/**', 'application/demo/**', 'application/app.ts', 'application/package*.json', 'application/scripts/**', 'application/client/**', 'functions/**', '.github/workflows/demo-routing-validation.yml']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: routing-demo-validation
+  cancel-in-progress: true
+jobs:
+  validate:
+    if: github.repository == 'msiric/feasible-route-mapping' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.23.2'
+      - name: Install and test
+        run: |
+          npm --prefix application ci
+          npm --prefix application/client ci
+          npm --prefix application test
+          npm --prefix application/client run typecheck
+          npm --prefix application/client run build
+      - name: Build pinned regional image
+        run: docker build --tag routing-demo:test .
+      - name: Exercise actual engine at free-tier limits
+        env:
+          DEMO_PROXY_SECRET: ci-validation-only-not-a-production-credential
+          CLIENT_URI: https://demo.pages.dev
+        run: |
+          docker run -d --name routing-demo-ci --memory=512m --memory-swap=512m --cpus=0.1 --pids-limit=64 -p 127.0.0.1:5076:10000 -e PORT=10000 -e DEMO_PROXY_SECRET -e CLIENT_URI routing-demo:test
+          node application/scripts/verify-engine.mjs
+          docker exec routing-demo-ci cat /sys/fs/cgroup/memory.peak
+          docker exec routing-demo-ci cat /sys/fs/cgroup/memory.events
+      - name: Diagnostic logs and cleanup
+        if: always()
+        run: |
+          docker logs --tail 80 routing-demo-ci || true
+          docker rm -f routing-demo-ci || true

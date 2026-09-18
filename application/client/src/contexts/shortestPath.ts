@@ -1,3 +1,4 @@
+import { routeJourney } from '../demo/requests.mjs';
 import { fetchRoute } from "@api/endpoints";
 import { toErrorMessage } from "@util/error";
 import {
@@ -7,7 +8,7 @@ import {
 } from "@util/options";
 import { LatLngExpression } from "leaflet";
 import { FieldValues } from "react-hook-form";
-import create, { GetState, SetState } from "zustand";
+import { create, GetState, SetState } from "zustand";
 import hashObject from "object-hash";
 
 export interface PathSegments {
@@ -54,6 +55,7 @@ export interface ShortestPathError {
 export interface ShortestPathState {
   data: { path: ShortestPathData[]; hash: string };
   loading: boolean;
+  progress: string;
   error: ShortestPathError;
 }
 
@@ -69,8 +71,12 @@ export type ShortestPathContext = ShortestPathState & ShortestPathActions;
 const initialState: ShortestPathState = {
   data: { path: [], hash: "" },
   loading: false,
+  progress: "",
   error: { retry: false, message: "" },
 };
+
+let activeRequest: AbortController | undefined;
+let requestGeneration = 0;
 
 const initState = () => ({
   ...initialState,
@@ -84,18 +90,23 @@ const initActions = (
     options: CostingOption[],
     hash: string
   ): Promise<void> => {
+    activeRequest?.abort();
+    activeRequest = new AbortController();
+    const signal = activeRequest.signal, generation = ++requestGeneration;
     try {
       set((state) => ({
         ...state,
         data: { path: [], hash: "" },
         loading: true,
+        progress: "Requesting reference route…",
         error: { ...initialState.error },
       }));
-      const shortestSegments = await Promise.all(
-        options.map(async (segment) => await fetchRoute(segment))
-      );
+      const shortestSegments = await routeJourney(options,
+        (segment: CostingOption, signal: AbortSignal) => fetchRoute(segment, signal,
+          seconds => { if (generation === requestGeneration) set({progress: `Server busy · retrying in ${seconds}s…`}); }),
+        signal, (index: number, total: number) => set({progress: `Reference route · segment ${index}/${total}`}));
       const shortestPath: ShortestPathData[] = shortestSegments.map(
-        ({ features, trip }, index) => ({
+        ({ features, trip }: Awaited<ReturnType<typeof fetchRoute>>, index: number) => ({
           features: features,
           duration: trip.legs.reduce(
             (sum, { summary }) => sum + summary.time,
@@ -112,17 +123,21 @@ const initActions = (
         })
       );
 
+      if (generation !== requestGeneration) return;
       set((state) => ({
         ...state,
         data: { path: shortestPath, hash },
         loading: false,
+        progress: "",
         error: { ...initialState.error },
       }));
     } catch (err) {
+      if (signal.aborted || generation !== requestGeneration) return;
       const errorMessage = toErrorMessage(err);
       set((state) => ({
         ...state,
         loading: false,
+        progress: "",
         error: { retry: true, message: errorMessage },
       }));
     }
@@ -137,8 +152,8 @@ const initActions = (
           applyTransportationMode(
             values.options[i + 1].transportationMode,
             values.options[i + 1].timeRange,
-            options.map(({ location }) => location!),
-            values.excludeLocations
+            options.map(({ location }) => ({ ...location!, lat: Number(location!.lat), lon: Number(location!.lon) })),
+            values.excludeLocations.map((location: Location) => ({ ...location, lat: Number(location.lat), lon: Number(location.lon) }))
           )
         );
       }
@@ -150,10 +165,12 @@ const initActions = (
       ...state,
       data: { path: shortestPath, hash },
       loading: false,
+      progress: "",
       error: { ...initialState.error },
     }));
   },
   resetShortestPath: () => {
+    activeRequest?.abort(); requestGeneration++;
     set({ ...initialState });
   },
 });

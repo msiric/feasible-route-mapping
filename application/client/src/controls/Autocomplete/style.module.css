@@ -1,5 +1,6 @@
 .autocompleteInput {
   width: 100%;
+  min-width: 0;
 }
 
 .loadingSpinner {
@@ -8,4 +9,12 @@
 
 .locationIcon {
   margin-right: 8px;
+}
+
+.fullValue {
+  margin: 4px 14px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  overflow-wrap: anywhere;
 }

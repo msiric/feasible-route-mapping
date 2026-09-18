@@ -1,44 +1,34 @@
 .header {
-  padding-bottom: 0px;
+  position: relative;
+  flex-shrink: 0;
+  padding: 12px 14px;
 }
 
 .heading {
   font-size: 18px;
   font-weight: bold;
+  line-height: 1.35;
 }
 
 .toggle,
 .reset,
 .revert {
-  width: 35px;
-  height: 40px;
-  right: 0;
-  top: 10px;
-  position: absolute;
-  background: #121212;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
+  width: 28px;
+  height: 32px;
+  padding: 2px;
+  flex-shrink: 0;
   color: #fff;
-  transition: 0.5s;
+  transition: 0.3s;
 }
 
 .toggleHidden {
+  position: absolute;
   width: 40px;
   height: 40px;
-  right: -25px;
-  transition: 0.5s;
-}
-
-.reset {
-  right: 65px;
-}
-
-.revert {
-  right: 35px;
+  top: 10px;
+  right: -30px;
+  background: #121212;
+  border-radius: 0 20px 20px 0;
 }
 
 .icon {
@@ -47,5 +37,8 @@
 
 .iconHidden {
   transform: rotate(180deg);
-  transition: 0.3s;
+}
+
+@media (max-width: 360px) {
+  .heading { font-size: 16px; }
 }

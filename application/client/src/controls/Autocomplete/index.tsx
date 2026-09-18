@@ -1,9 +1,10 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useLayoutEffect, useRef } from "react";
 import Autocomplete from "@mui/material/Autocomplete";
 import {
   Control,
   Controller,
   ControllerRenderProps,
+  useWatch,
   FieldValues,
 } from "react-hook-form";
 import {
@@ -30,6 +31,7 @@ interface AutocompleteInputProps {
   placeholderLabel?: string;
   emptyLabel?: string;
   multiple?: boolean;
+  showFullValue?: boolean;
   fetchData: (location: string) => Promise<Address[]>;
 }
 
@@ -41,16 +43,43 @@ export const AutocompleteInput = ({
   error,
   helperText,
   multiple = false,
+  showFullValue = false,
   disabled = false,
   fetchingLabel = "Fetching results...",
-  placeholderLabel = "Start typing to fetch results",
-  emptyLabel = "No results found",
+  placeholderLabel = "Search Adelaide landmarks, or right-click the map",
+  emptyLabel = "No bundled landmark found. Right-click the map to choose a point.",
   fetchData,
 }: AutocompleteInputProps) => {
   const [inputValue, setInputValue] = useState<string>("");
   const [options, setOptions] = useState<Address[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const selectedValue = useWatch({ control, name });
+  const selectedLabel = !multiple && selectedValue?.[identifier] || "";
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    const input = inputRef.current;
+    if (!showFullValue || !input) return;
+    const context = document.createElement("canvas").getContext("2d");
+    if (!context) return;
+    let active = true;
+    const measure = () => {
+      if (!active) return;
+      const style = getComputedStyle(input);
+      context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const textWidth = context.measureText(selectedLabel).width +
+        Math.max(0, selectedLabel.length - 1) * (parseFloat(style.letterSpacing) || 0);
+      const availableWidth = input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      setIsTruncated(!!selectedLabel && textWidth > availableWidth);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(input);
+    measure();
+    void document.fonts.ready.then(measure);
+    return () => { active = false; observer.disconnect(); };
+  }, [selectedLabel, showFullValue]);
 
   const setStateInBatch = (isLoading = loading, newOptions = options) => {
     setLoading(isLoading);
@@ -109,6 +138,7 @@ export const AutocompleteInput = ({
   }, [inputValue, isOpen]);
 
   return (
+    <Box className={classes.autocompleteInput}>
     <Controller
       name={name}
       control={control}
@@ -118,6 +148,8 @@ export const AutocompleteInput = ({
           disableClearable={!field.value}
           className={classes.autocompleteInput}
           multiple={multiple}
+          disabled={disabled}
+          isOptionEqualToValue={(option, value) => option.lat === value.lat && option.lon === value.lon}
           filterOptions={(x) => x}
           options={options}
           autoComplete
@@ -131,7 +163,7 @@ export const AutocompleteInput = ({
           }
           onChange={(_event, newValue) => {
             setOptions(options);
-            field.onChange(newValue);
+            field.onChange(multiple && Array.isArray(newValue) ? newValue.slice(0,8) : newValue);
           }}
           onInputChange={(_event, newInputValue) => {
             setInputValue(newInputValue);
@@ -141,6 +173,7 @@ export const AutocompleteInput = ({
           renderInput={(params) => (
             <TextField
               {...params}
+              inputRef={inputRef}
               InputProps={{
                 ...params.InputProps,
                 endAdornment: (
@@ -185,5 +218,9 @@ export const AutocompleteInput = ({
         />
       )}
     />
+    {showFullValue && isTruncated && !error && (
+      <Typography className={classes.fullValue}>{selectedLabel}</Typography>
+    )}
+    </Box>
   );
 };
