@@ -4,7 +4,7 @@ An interactive exploration of where a journey could pass when it has extra trave
 
 The restored portfolio demo uses **South Australia** routing data and six modes: car, bicycle, pedestrian, truck, bus and motor scooter. Bus means road routing for a bus, not public transport schedules. Search bundled Adelaide landmarks, drag markers, or right-click the map to choose locations and roads to avoid.
 
-**Restoration status:** frontend and gateway tests pass. The real Docker engine and bundled example are being validated before the public live demo is announced. Hosting uses isolated `msiric-public-demos` projects on Cloudflare Pages Free and Render Free; no paid infrastructure is required. See [deployment details](DEPLOYMENT.md).
+**[Open the bundled demo](https://feasible-route-mapping-demo.pages.dev).** The static example works without a routing server. The real Docker engine has passed tests at the free plan’s resource limits; the live Render service is awaiting final deployment. Hosting uses isolated `msiric-public-demos` projects on Cloudflare Pages Free and Render Free; no paid infrastructure is required. See [deployment details](DEPLOYMENT.md).
 
 ## What the map means
 

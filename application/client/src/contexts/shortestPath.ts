@@ -7,7 +7,7 @@ import {
 } from "@util/options";
 import { LatLngExpression } from "leaflet";
 import { FieldValues } from "react-hook-form";
-import create, { GetState, SetState } from "zustand";
+import { create, GetState, SetState } from "zustand";
 import hashObject from "object-hash";
 
 export interface PathSegments {

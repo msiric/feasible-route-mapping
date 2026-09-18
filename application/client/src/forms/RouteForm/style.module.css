@@ -1,6 +1,5 @@
 .container {
-  max-height: 325px;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .itemOptions {
