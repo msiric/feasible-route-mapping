@@ -24,7 +24,7 @@ export function validate(action: string, body: any) {
   if (action === 'isochrone') {
     if (!Array.isArray(body.contours) || !body.contours.length || body.contours.length > 4 || body.contours.some((c: any) => typeof c?.time !== 'number' || !Number.isFinite(c.time) || c.time < 0.001 || c.time > 40)) throw new InputError('Use one to four contours, each between 0.001 and 40 minutes.');
     if (body.reverse !== undefined && typeof body.reverse !== 'boolean') throw new InputError('Invalid reverse flag.');
-    result.contours = [...new Set<number>(body.contours.map((c: any) => +c.time.toFixed(4)))].sort((a,b)=>a-b).map(time=>({time}));
+    result.contours = [...new Set<number>(body.contours.map((c: any) => +c.time.toFixed(4)))].sort((a,b)=>a-b).map(time=>({time,color:Math.round(time*10000).toString(16).padStart(6,'0')}));
     result.reverse = body.reverse === true;
     result.polygons = true; result.denoise = 0; result.generalize = 20;
   }
@@ -76,9 +76,21 @@ export function createGateway(options: Options) {
       const upstream=await fetcher((options.engineOrigin || 'http://127.0.0.1:8002')+'/'+action, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params),signal:AbortSignal.timeout(options.timeout || 40_000)});
       const reader=upstream.body?.getReader(); const chunks: Uint8Array[]=[]; let size=0;
       if(reader) while(true) { const {done,value}=await reader.read(); if(done)break; size+=value.length; if(size>2_000_000) { await reader.cancel(); throw new Error('TOO_LARGE'); } chunks.push(value); }
-      const text=Buffer.concat(chunks).toString('utf8');
+      let text=Buffer.concat(chunks).toString('utf8');
       if(!upstream.ok) { res.status(422).json({error:'No usable road route was found. Move the endpoints closer to roads, reduce exclusions, or choose another mode.'}); return; }
-      JSON.parse(text);
+      const parsed=JSON.parse(text);
+      if(action === 'isochrone') {
+        // Valhalla serializes contour labels to two decimals. Its explicit color
+        // survives intact, so use a unique color tag to restore the exact time.
+        const times=new Map(params.contours.map((c: any)=>['#'+c.color,c.time]));
+        if(!Array.isArray(parsed.features))throw new Error('INVALID_CONTOURS');
+        for(const feature of parsed.features) {
+          const time=times.get(String(feature.properties?.color).toLowerCase());
+          if(time===undefined)throw new Error('UNKNOWN_CONTOUR');
+          feature.properties.contour=time;
+        }
+        text=JSON.stringify(parsed);size=Buffer.byteLength(text);
+      }
       const previous=cache.get(key); if(previous)bytes-=previous.bytes;
       cache.set(key,{text,bytes:size,at:Date.now()}); bytes+=size;
       while(bytes>24_000_000 || cache.size>256) { const first=cache.keys().next().value!; bytes-=cache.get(first)!.bytes; cache.delete(first); }
