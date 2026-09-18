@@ -1,3 +1,4 @@
+import { useDemo } from "../../demo/state";
 import { fetchAddress } from "@api/endpoints";
 import { useIsochroneIntersections } from "@contexts/isochroneIntersections";
 import { AUTO_HIDE_MENU_WIDTH, useMenuOverlay } from "@contexts/menuOverlay";
@@ -53,6 +54,7 @@ const TRANSPORTATION_MODES = Object.values(TRANSPORTATION_MODE_OPTIONS).map(
 );
 
 export const IsochroneForm = () => {
+  const live=useDemo(state=>state.live);
   const shortestPath = useShortestPath((state) => state.data.path);
   const shortestPathError = useShortestPath((state) => state.error);
   const shortestPathLoading = useShortestPath((state) => state.loading);
@@ -88,7 +90,7 @@ export const IsochroneForm = () => {
     control,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors: formErrors },
     trigger: triggerValidation,
   } = useFormContext();
 
@@ -98,10 +100,12 @@ export const IsochroneForm = () => {
   });
 
   const values = watch();
+  const errors = formErrors as Record<string, any>;
+  const progress = useIsochroneIntersections(state => state.progress);
 
   const containsWaypoints = values.options.length > MINIMUM_NUMBER_OF_WAYPOINTS;
 
-  const isDisabled = shortestPathLoading || isochroneIntersectionsLoading;
+  const isDisabled = !live || shortestPathLoading || isochroneIntersectionsLoading;
 
   const formatSegmentDuration = (duration: number, fixedDigits = 0) =>
     !!fixedDigits
@@ -114,6 +118,7 @@ export const IsochroneForm = () => {
   };
 
   const handleFormSubmit = async () => {
+    if (!shortestPath.length) return;
     setPreviousCalculation(shortestPath, values);
     resetIsochroneIntersections();
     await findIsochroneIntersections(shortestPath);
@@ -194,7 +199,7 @@ export const IsochroneForm = () => {
         <Typography className={classes.durationLabel}>
           {index
             ? `PD ${pathDuration} min`
-            : `Total PD (path duration) ${pathDuration} min`}
+            : `Reference route ${pathDuration} min`}
         </Typography>
         <Divider
           className={index ? classes.spacer : classes.partition}
@@ -203,7 +208,7 @@ export const IsochroneForm = () => {
         <Typography className={classes.durationLabel}>
           {index
             ? `AT ${availableTime} min`
-            : `Total AT (available time) ${availableTime} min`}
+            : `Time budget ${availableTime} min`}
         </Typography>
       </>
     );
@@ -216,6 +221,7 @@ export const IsochroneForm = () => {
         autoComplete="off"
         onSubmit={handleSubmit(handleFormSubmit)}
       >
+        <fieldset disabled={!live} style={{border:0,padding:0,margin:0,minWidth:0}}>
         <List className={classes.list}>
           {values.options.map((item: Option, index: number) => (
             <Box
@@ -323,16 +329,18 @@ export const IsochroneForm = () => {
             <AutocompleteInput
               {...register(`excludeLocations` as const, {})}
               multiple
-              label="Exclude locations"
+              label="Avoid road locations (max 8)"
               fetchData={fetchAddress}
               identifier="display_name"
               control={control}
               disabled={isDisabled}
               error={!!errors.excludeLocations?.message}
-              helperText={errors.excludeLocations?.message}
+              helperText={errors.excludeLocations?.message || ""}
             />
           </Box>
         </List>
+        {progress && <Typography role="status" variant="body2">{progress}</Typography>}
+        {live && isDisabled && <Button onClick={() => { useShortestPath.getState().resetShortestPath(); resetIsochroneIntersections(); }}>Cancel</Button>}
         <Box className={classes.actions}>
           <Button
             color="primary"
@@ -345,7 +353,7 @@ export const IsochroneForm = () => {
                 ...DEFAULT_LOCATION_OPTIONS,
               })
             }
-            disabled={isDisabled}
+            disabled={isDisabled || values.options.length >= 3}
           >
             Add waypoint
           </Button>
@@ -392,6 +400,7 @@ export const IsochroneForm = () => {
             </LoadingButton>
           )}
         </Box>
+        </fieldset>
       </form>
     </Box>
   );

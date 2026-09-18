@@ -15,3 +15,6 @@
 .content {
   padding-top: 8px;
 }
+
+.content { max-height: calc(100dvh - 90px); overflow-y: auto; }
+@media (max-width: 400px) { .container { width: calc(100vw - 20px); } }

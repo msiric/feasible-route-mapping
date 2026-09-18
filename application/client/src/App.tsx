@@ -1,3 +1,5 @@
+import hashObject from "object-hash";
+import { useDemo } from "./demo/state";
 import { LegendCard } from "@components/Legend";
 import { Map } from "@components/Map";
 import { MenuCard } from "@components/Menu";
@@ -62,6 +64,7 @@ export const App = () => {
   );
 
   const valuesHash = useRef("");
+  const live = useDemo(state => state.live);
 
   const methods = useForm<FieldValues>({
     defaultValues: {
@@ -72,6 +75,7 @@ export const App = () => {
   });
 
   const values = methods.watch();
+  const formHash = hashObject(values);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -79,13 +83,18 @@ export const App = () => {
     const { params, hash } = breakPathIntoSegments(values);
     if (hash !== valuesHash.current) {
       valuesHash.current = hash;
+      useIsochroneIntersections.getState().resetIsochroneIntersections();
       await findShortestPath(params, hash);
     }
   };
 
   useEffect(() => {
-    handleValuesChange();
-  }, [values]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!live) { valuesHash.current=""; return; }
+    const timer=setTimeout(()=>{
+      void handleValuesChange();
+    },400);
+    return ()=>clearTimeout(timer);
+  }, [formHash,live]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (shortestPathError.retry) {

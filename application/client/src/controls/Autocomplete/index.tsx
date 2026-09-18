@@ -43,8 +43,8 @@ export const AutocompleteInput = ({
   multiple = false,
   disabled = false,
   fetchingLabel = "Fetching results...",
-  placeholderLabel = "Start typing to fetch results",
-  emptyLabel = "No results found",
+  placeholderLabel = "Search Adelaide landmarks, or right-click the map",
+  emptyLabel = "No bundled landmark found. Right-click the map to choose a point.",
   fetchData,
 }: AutocompleteInputProps) => {
   const [inputValue, setInputValue] = useState<string>("");
@@ -118,6 +118,8 @@ export const AutocompleteInput = ({
           disableClearable={!field.value}
           className={classes.autocompleteInput}
           multiple={multiple}
+          disabled={disabled}
+          isOptionEqualToValue={(option, value) => option.lat === value.lat && option.lon === value.lon}
           filterOptions={(x) => x}
           options={options}
           autoComplete
@@ -131,7 +133,7 @@ export const AutocompleteInput = ({
           }
           onChange={(_event, newValue) => {
             setOptions(options);
-            field.onChange(newValue);
+            field.onChange(multiple && Array.isArray(newValue) ? newValue.slice(0,8) : newValue);
           }}
           onInputChange={(_event, newInputValue) => {
             setInputValue(newInputValue);
