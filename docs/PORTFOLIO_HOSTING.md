@@ -6,7 +6,7 @@ Owner: Mario Siric (`msiric`). Last verified: **18 September 2026**. Shared oper
 
 Yes, for the agreed demo scope: working public frontends and live workflows, isolated free hosting, merged source, reproducible builds and documented limits. There is no known blocking defect in the flows tested during restoration. Every possible input, future dependency release and provider change has not been validated.
 
-A **legacy-host billing and resource audit** is tracked separately in private operator records, including AWS, Fly, Railway and historical Heroku hosting. Account access and current invoices must be checked before declaring all old charges eliminated. Partial evidence is not a complete account inventory. No legacy data has been deleted; any retirement needs exact resource ownership, dependency checks and an explicit data-retention decision.
+The **legacy-host billing and resource audit** of the inspected AWS, Fly, Railway and Heroku accounts was completed on 18 September 2026. The specifically approved empty FRM discovery service, namespace and private DNS zone were archived and removed; all other legacy resources and plans were preserved. Detailed account, billing and configuration evidence remains in private operator records. Retained legacy storage can still incur charges, and the first full post-cleanup bill is not yet available. Further retirement needs exact resource ownership, dependency checks and an explicit data-retention decision.
 
 No additional architecture migration is justified by the observed demo workload. Maintain this setup and revisit the optional improvements below when their triggers occur.
 
@@ -159,7 +159,8 @@ Monthly, or before sharing widely: inspect usage/plan settings, open all samples
 
 | Trigger | Improvement | Status |
 | --- | --- | --- |
-| Financial follow-up | Finish legacy-host inventory and billing review in private operator records | Access-dependent checks remain; no blanket claim of zero historical charges |
+| Completed 18 September 2026 | Audited inspected legacy accounts and removed the specifically approved orphaned FRM discovery/DNS resources | Evidence archived privately; other legacy resources and plans preserved |
+| Next full billing cycle | Verify the first full post-cleanup AWS bill against the private audit | Future bill not yet available; no automated follow-up scheduled |
 | Completed 18 September 2026 | Aligned each existing Render source branch and manifest with GitHub default | Auto-deploy/PR previews remain Off; current deployed API versions retained |
 | Completed 18 September 2026 | Added Vaxx CI using disposable PG, existing API/proxy/migration tests and a clean client build | All three repositories now have automatic validation; CI cannot deploy or access production secrets |
 | Measured slow first load | Profile bundles/images, lazy-load heavy routes/components | Optimize measured bottlenecks; no UI rewrite needed now |

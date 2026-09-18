@@ -9,7 +9,7 @@ Parent: `msiric-public-demos`. This project has no database, payment provider, o
 - A pinned Valhalla image builds the South Australia graph from a SHA-256 checked public release asset. The graph is part of the image, so cold starts never download or rebuild it. Source and license: [deployment/DATA.md](deployment/DATA.md).
 - The Node gateway listens on Render's `PORT`; Valhalla is restricted to loopback. `/healthz` reports startup readiness without repeated routing queries. One engine worker, bounded queue, 24 MB cache, 96 MB Node heap, bounded request/response sizes, per-IP rate limits.
 - Only the Pages proxy holds `API_ORIGIN` and `DEMO_PROXY_SECRET`; Render has the matching secret and `CLIENT_URI`. Never commit these values. Direct requests to the Render API are rejected.
-- Regional limits: 2–3 locations, ≤40 km straight-line distance per segment, ≤40 minutes total travel-time budget per segment, ≤10 extra minutes, ≤8 road exclusions. Six original travel modes and mode-specific preferences remain. Bus is road routing, not timetable transit.
+- Regional limits: 2–8 locations, ≤40 km straight-line distance per segment, ≤40 minutes total travel-time budget per segment, ≤10 extra minutes, ≤8 road exclusions. Six original travel modes and mode-specific preferences remain. Bus is road routing, not timetable transit.
 
 ## Validation
 
@@ -17,7 +17,7 @@ Parent: `msiric-public-demos`. This project has no database, payment provider, o
 `npm --prefix application test` checks the real gateway with controlled upstream responses and polygon calculations.
 `npm --prefix application/client run typecheck` and `npm --prefix application/client run build` validate the frontend.
 
-The public GitHub Actions workflow builds and tests the real image on a standard free runner with 512 MB / 0.1 CPU limits. It exports the small public sample through logs, without paid artifact storage. The real engine built and started successfully on Render Free. Public HTTPS tests passed all six modes, 40-minute and fractional reverse contours, exclusions, origin/direct-API rejection, and complete zero/five-minute-extra feasible-region calculations. Public browser checks passed live calculation, automatic mode changes, zero extra time and cancellation. Docker on the local development machine was unresponsive during restoration; no unrelated containers or Docker settings were changed.
+The public GitHub Actions workflow builds and tests the real image on a standard free runner with 512 MB / 0.1 CPU limits. It exports the public four-stop, three-mode sample through logs, without paid artifact storage. The real engine built and started successfully on Render Free. Public HTTPS tests passed all six modes, 40-minute and fractional reverse contours, exclusions, origin/direct-API rejection, and complete zero/five-minute-extra feasible-region calculations. Public browser checks passed live calculation, automatic mode changes, zero extra time and cancellation. Docker on the local development machine was unresponsive during restoration; no unrelated containers or Docker settings were changed.
 
 ## Accuracy
 
@@ -62,3 +62,19 @@ wrangler pages deploy application/client/build --project-name feasible-route-map
 Set Pages production secrets `API_ORIGIN=https://feasible-route-mapping-demo-api.onrender.com` and a private `DEMO_PROXY_SECRET` matching Render before publishing; redeploy after changing secrets. Render uses the root `Dockerfile` and repository-root build context, with no startup override or private registry credentials. Its `CLIENT_URI` is the exact production Pages origin.
 
 Verified production on 18 September 2026: Pages `c1bd1914`, API commit `6d33283`. The earlier Pages `749c62e2` on branch `main` is only a preview. The actual production UI includes the cancellation fix, preserving a valid route and duration when area calculation is canceled. A real routing request after a natural idle period completed in **23.47 seconds** (HTTP 200); this is an observation, not an SLA.
+
+## Journey showcase and capacity checks (19 September 2026)
+
+The initial example travels from Glenelg Jetty to Central Market by car, walks to the Art Gallery, then cycles to Norwood. Its reference routes and feasible areas are calculated by the pinned regional engine, bundled in `application/client/public/demo/sample.json`, and served without waking Render. Reproduce it from the repository root with `node application/scripts/verify-engine.mjs` against the validation container; the script also exercises all seven legs and areas of an eight-location journey. Never hand-draw or substitute approximate sample geometry.
+
+The showcase covers 15.286 km and 24 area bands (about 228 KB gzipped). Local ARM64 validation used the pinned Valhalla image, the checksum-verified original regional data and Node 22.23.2, with the production gateway/configuration under 512 MB / 0.1 CPU; measured peak memory was 402.8 MiB with no OOM events. A full image rebuild is also exercised by the public CI workflow.
+
+Eight locations are a UI workload bound, not a limitation of the original algorithm. Each consecutive pair remains a separate routing request. Routes and contour batches run sequentially, so longer journeys do not increase engine concurrency or its queue size. The original 512 MB instance, regional, distance, time, exclusion and per-IP rate limits remain in force. More legs take longer. HTTP 429 responses receive at most two cancellable retries per request, honoring the gateway's `Retry-After` up to 60 seconds, with visible progress; other failures surface for manual retry. Cancel and sample mode abort pending work.
+
+Release checks include adding/removing points through the eighth location, the disabled ninth-point control, cancellation, sample/live switching, and a complete multi-leg area calculation. After documentation edits, check all three public GitHub READMEs: local images must exist with matching case, badges must target existing workflows on the actual default branch, and external image/link destinations must load. A retired deployment workflow should lose its badge or be replaced by a truthful current validation badge; do not leave a misleading production/staging badge.
+
+## Route panel layout
+
+The header stays above the scrolling form. Each leg gives extra time and transport mode their own columns, with route/budget timings underneath; the dropdowns stack at viewport widths of 340 px or less. Clipped location names have a wrapping full-name caption. The waypoint count sits beside the add button, and calculation has its own full-width action. The legend also fits narrow screens.
+
+For layout releases, check desktop and 320 px viewports, scroll through the final actions, collapse/reopen the panel, and confirm the long-name caption and live controls still work. Run the frontend typecheck/build and publish using the production Pages label above. Layout-only changes do not require an API redeployment.
