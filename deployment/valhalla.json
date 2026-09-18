@@ -5,10 +5,10 @@
     "file_name": "path_to_some_file.log"
   },
   "mjolnir": {
-    "max_cache_size": 32000000,
+    "max_cache_size": 1000000000,
     "id_table_size": 1300000000,
-    "use_lru_mem_cache": true,
-    "lru_mem_cache_hard_control": true,
+    "use_lru_mem_cache": false,
+    "lru_mem_cache_hard_control": false,
     "use_simple_mem_cache": false,
     "concurrency": 1,
     "tile_dir": "/data/tiles",
