@@ -1,5 +1,7 @@
 # Isolated free portfolio deployment
 
+Shared references: [portfolio operations](https://github.com/msiric/feasible-route-mapping/blob/master/docs/PORTFOLIO_HOSTING.md), [future-project playbook](https://github.com/msiric/feasible-route-mapping/blob/master/docs/FREE_DEMO_HOSTING.md), [deployment record template](https://github.com/msiric/feasible-route-mapping/blob/master/docs/PROJECT_HOSTING_TEMPLATE.md).
+
 Parent: `msiric-public-demos`. This project has no database, payment provider, outbound email, paid disk, or automatic keep-alive job.
 
 - Cloudflare Pages Free: `feasible-route-mapping-demo`, live URL `https://feasible-route-mapping-demo.pages.dev`.
@@ -36,3 +38,27 @@ The South Australia extract lacks complete administrative polygons and the build
 ## Public measurements (18 September 2026)
 
 Warm public route requests took approximately 0.07–0.19 seconds after the first 1.34-second route; reverse contour pairs through 40 minutes took 0.43–3.55 seconds, depending on mode. These are observed smoke-test timings, not service guarantees. Sleeping-instance wake-up adds provider startup time; the UI displays progress and leaves the bundled sample available.
+
+## Source and release branches
+
+The restoration is merged into GitHub `master`. Render currently follows the retained `codex/restore-public-demo` branch with auto-deploy Off; merging source does not deploy it. For a future backend release from the default branch, deliberately update the existing demo service's source branch and `render.yaml` to `master`, then manually deploy a tested commit. Do not create another service.
+
+Pages uses Direct Upload and its production label is **`codex/restore-public-demo`**, independently of the source checkout. Another `--branch` can create only a preview. Verify the root public URL and its asset names after upload. Markdown-only updates require no hosting deployment.
+
+## Frontend deployment commands
+
+Cloudflare account: `f8fd075624b85e729e46d15d374e59ed` (`msiric-public-demos`). Replace the profile placeholder with the existing private demo CLI directory, authenticate there and verify this account. Pages rejects `account_id` in its config; keep these exports for every Wrangler call. Run from the repository root:
+
+```sh
+export CLOUDFLARE_ACCOUNT_ID=f8fd075624b85e729e46d15d374e59ed
+export XDG_CONFIG_HOME='<absolute-path-to-isolated-demo-cli-profile>'
+npm --prefix application ci
+npm --prefix application/client ci
+npm --prefix application/client run typecheck
+npm --prefix application/client run build
+wrangler pages deploy application/client/build --project-name feasible-route-mapping-demo --branch codex/restore-public-demo
+```
+
+Set Pages production secrets `API_ORIGIN=https://feasible-route-mapping-demo-api.onrender.com` and a private `DEMO_PROXY_SECRET` matching Render before publishing; redeploy after changing secrets. Render uses the root `Dockerfile` and repository-root build context, with no startup override or private registry credentials. Its `CLIENT_URI` is the exact production Pages origin.
+
+Verified production on 18 September 2026: Pages `c1bd1914`, API commit `6d33283`. The earlier Pages `749c62e2` on branch `main` is only a preview. The actual production UI includes the cancellation fix, preserving a valid route and duration when area calculation is canceled. A real routing request after a natural idle period completed in **23.47 seconds** (HTTP 200); this is an observation, not an SLA.

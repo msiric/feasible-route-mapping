@@ -55,3 +55,9 @@ Map and routing data © [OpenStreetMap contributors](https://www.openstreetmap.o
 Landmark search is local; it does not call Nominatim. Live calculations send selected coordinates to the demo server. Basemap browsing loads ordinary, cached OpenStreetMap tiles with attribution and no offline prefetch. No account, location permission or analytics is required. The hosting providers receive normal request metadata.
 
 The original `container/` directory remains as historical infrastructure reference. The repository-root Dockerfile and [DEPLOYMENT.md](DEPLOYMENT.md) define the restored deployment.
+
+## Hosting documentation
+
+- [Deploy and maintain this app](DEPLOYMENT.md).
+- [Portfolio ownership, costs, recovery and maintenance](https://github.com/msiric/feasible-route-mapping/blob/master/docs/PORTFOLIO_HOSTING.md).
+- [Host a future project for $0](https://github.com/msiric/feasible-route-mapping/blob/master/docs/FREE_DEMO_HOSTING.md) and [copy its deployment record template](https://github.com/msiric/feasible-route-mapping/blob/master/docs/PROJECT_HOSTING_TEMPLATE.md).
