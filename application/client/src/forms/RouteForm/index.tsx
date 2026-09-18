@@ -86,7 +86,6 @@ export const IsochroneForm = () => {
 
   const {
     watch,
-    register,
     control,
     handleSubmit,
     setValue,
@@ -198,7 +197,7 @@ export const IsochroneForm = () => {
       <>
         <Typography className={classes.durationLabel}>
           {index
-            ? `PD ${pathDuration} min`
+            ? `Route ${pathDuration} min`
             : `Reference route ${pathDuration} min`}
         </Typography>
         <Divider
@@ -207,7 +206,7 @@ export const IsochroneForm = () => {
         />
         <Typography className={classes.durationLabel}>
           {index
-            ? `AT ${availableTime} min`
+            ? `Budget ${availableTime} min`
             : `Time budget ${availableTime} min`}
         </Typography>
       </>
@@ -233,11 +232,9 @@ export const IsochroneForm = () => {
                   <Divider className={classes.divider} orientation="vertical" />
                   <Box className={classes.itemOptions}>
                     <SelectInput
-                      {...register(`options.${index}.timeRange` as const, {
-                        required: true,
-                      })}
+                      name={`options.${index}.timeRange`}
                       control={control}
-                      label="Time range"
+                      label="Extra time"
                       options={TIME_RANGES}
                       disabled={isDisabled}
                       error={!!errors.options?.[index]?.timeRange?.message}
@@ -247,10 +244,7 @@ export const IsochroneForm = () => {
                       {renderDurationLabel(index)}
                     </Box>
                     <SelectInput
-                      {...register(
-                        `options.${index}.transportationMode` as const,
-                        { required: true }
-                      )}
+                      name={`options.${index}.transportationMode`}
                       control={control}
                       label="Transport mode"
                       options={TRANSPORTATION_MODES}
@@ -290,9 +284,7 @@ export const IsochroneForm = () => {
                     </IconButton>
                   </ListItemAvatar>
                   <AutocompleteInput
-                    {...register(`options.${index}.location` as const, {
-                      required: true,
-                    })}
+                    name={`options.${index}.location`}
                     label={`Location ${index + 1}`}
                     fetchData={fetchAddress}
                     identifier="display_name"
@@ -327,7 +319,7 @@ export const IsochroneForm = () => {
           <Box className={classes.totalDuration}>{renderDurationLabel()}</Box>
           <Box className={classes.excludeLocations}>
             <AutocompleteInput
-              {...register(`excludeLocations` as const, {})}
+              name={`excludeLocations`}
               multiple
               label="Avoid road locations (max 8)"
               fetchData={fetchAddress}

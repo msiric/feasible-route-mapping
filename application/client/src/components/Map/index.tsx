@@ -20,7 +20,8 @@ import {
   TRANSPORTATION_MODE_PROPERTIES,
 } from "@util/options";
 import { LatLngExpression, LatLngLiteral } from "leaflet";
-import { memo } from "react";
+import { memo, useEffect } from "react";
+import Leaflet from "leaflet";
 import { useFormContext } from "react-hook-form";
 import {
   LayerGroup,
@@ -29,6 +30,7 @@ import {
   Polyline,
   TileLayer,
   ZoomControl,
+  useMap,
 } from "react-leaflet";
 import { Location, Option, ShortestPathData } from "@contexts/shortestPath";
 
@@ -291,6 +293,19 @@ const Markers = () => {
   );
 };
 
+const FitToRoute = () => {
+  const map=useMap();
+  const path=useShortestPath(state=>state.data.path);
+  const regions=useIsochroneIntersections(state=>state.data);
+  useEffect(()=>{
+    if(!path.length)return;
+    const bounds=Leaflet.latLngBounds(path.flatMap(segment=>segment.features) as Leaflet.LatLngTuple[]);
+    for(const feature of regions)bounds.extend(Leaflet.geoJSON(feature).getBounds());
+    if(bounds.isValid())map.fitBounds(bounds,{paddingTopLeft:[map.getSize().x>760?390:20,40],paddingBottomRight:[40,40],maxZoom:16,animate:false});
+  },[map,path,regions]);
+  return null;
+};
+
 export const Map = memo(() => {
   return (
     <MapContainer
@@ -305,6 +320,7 @@ export const Map = memo(() => {
         url={LEAFLET_TILES_URL}
       />
       <ZoomControl position="topright" />
+      <FitToRoute />
       <Intersections />
       <PreviousRoute />
       <Route />
