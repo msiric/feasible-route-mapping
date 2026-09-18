@@ -23,7 +23,7 @@ const modes=['auto','bicycle','pedestrian','truck','bus','motor_scooter'];
 for(const costing of modes) {
  const route=await request('route',{costing,locations:[A,B]});assert.ok(route.trip.summary.time>0);assert.ok(route.trip.legs[0].shape.length);
  for(const reverse of [false,true]) {
-  const iso=await request('isochrone',{costing,locations:[reverse?B:A],reverse,contours:[{time:2},{time:3.1234}]});
+  const iso=await request('isochrone',{costing,locations:[reverse?B:A],reverse,contours:[{time:2},{time:3.1234},{time:20},{time:40}]});
   assert.ok(iso.features.some(f=>Math.abs(f.properties.contour-3.1234)<0.00011),'Fractional contour labels must match requested minutes');
   assert.ok(iso.features.every(f=>['Polygon','MultiPolygon'].includes(f.geometry.type)));
  }
