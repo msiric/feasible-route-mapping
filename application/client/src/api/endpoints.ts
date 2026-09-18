@@ -1,3 +1,4 @@
+import { requestRouting } from '../demo/requests.mjs';
 import { parseGeometry } from "@util/geometry";
 import { LatLngExpression } from "leaflet";
 import { CostingOption } from "@util/options";
@@ -91,12 +92,7 @@ export const fetchAddress = async (query: string): Promise<Address[]> => places
   .filter(([name]) => name.toLowerCase().includes(query.trim().toLowerCase()))
   .map(([display_name,lat,lon],index) => ({display_name,lat:String(lat),lon:String(lon),place_id:index, type:'landmark'} as Address));
 
-const request = async (action: string, params: CostingOption, signal?: AbortSignal) => {
-  const response = await fetch('/api/'+action, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(params), signal: signal ? AbortSignal.any([signal,AbortSignal.timeout(90000)]) : AbortSignal.timeout(90000) });
-  if(!response.ok) { const data=await response.json().catch(()=>({})); throw new Error(data.error || 'The free routing server is starting or busy. Please retry shortly.'); }
-  return response.json();
+export const fetchRoute = async (params: CostingOption, signal?: AbortSignal, onWait?: (seconds: number) => void): Promise<ShortestSegment> => {
+  const data = await requestRouting('route',params,{signal,onWait}); data.features=parseGeometry(data); return data;
 };
-export const fetchRoute = async (params: CostingOption, signal?: AbortSignal): Promise<ShortestSegment> => {
-  const data = await request('route',params,signal); data.features=parseGeometry(data); return data;
-};
-export const fetchIsochrone = (params: CostingOption, signal?: AbortSignal): Promise<Isochrone> => request('isochrone',params,signal);
+export const fetchIsochrone = (params: CostingOption, signal?: AbortSignal, onWait?: (seconds: number) => void): Promise<Isochrone> => requestRouting('isochrone',params,{signal,onWait});

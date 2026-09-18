@@ -1,3 +1,4 @@
+import { MAX_LOCATIONS } from '../../demo/requests.mjs';
 import { useDemo } from "../../demo/state";
 import { useIsochroneIntersections } from "@contexts/isochroneIntersections";
 import { SplitButton, SplitButtonOption } from "@components/SplitButton";
@@ -55,7 +56,7 @@ export const MapPopup = () => {
 
   const handlePrependLocation = () => {
     const values = getValues();
-    if(values.options.length >= 3) return;
+    if(values.options.length >= MAX_LOCATIONS) return;
     setValue("options", [
       {
         location: {
@@ -98,7 +99,7 @@ export const MapPopup = () => {
 
   const handleAppendLocation = () => {
     const values = getValues();
-    if(values.options.length >= 3) return;
+    if(values.options.length >= MAX_LOCATIONS) return;
     setValue("options", [
       ...values.options,
       {
@@ -147,7 +148,7 @@ export const MapPopup = () => {
           variant="text"
           size="small"
           startIcon={<AddOriginIcon style={{ ...buttonStyles }} />}
-          disabled={values.options.length >= 3}
+          disabled={values.options.length >= MAX_LOCATIONS}
           onClick={handlePrependLocation}
         >
           Prepend location
@@ -157,7 +158,7 @@ export const MapPopup = () => {
           variant="text"
           size="small"
           startIcon={<AddDestinationIcon style={{ ...buttonStyles }} />}
-          disabled={values.options.length >= 3}
+          disabled={values.options.length >= MAX_LOCATIONS}
           onClick={handleAppendLocation}
         >
           Append location

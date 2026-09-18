@@ -12,9 +12,24 @@
   transition: 0.5s;
 }
 
-.content {
-  padding-top: 8px;
+.card {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 190px);
+  overflow: visible;
 }
 
-.content { max-height: max(180px, calc(100dvh - 270px)); overflow-y: auto; }
-@media (max-width: 400px) { .container { width: calc(100vw - 20px); } }
+.content {
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  scroll-padding-block: 16px;
+}
+
+@media (max-width: 400px) {
+  .container { width: calc(100vw - 20px); }
+  .containerHidden { left: calc(-100vw + 20px); }
+}

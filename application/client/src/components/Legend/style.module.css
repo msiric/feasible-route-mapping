@@ -74,3 +74,37 @@
   align-items: center;
   text-align: center;
 }
+
+@media (max-width: 374px) {
+  .container {
+    width: calc(100vw - 20px);
+    gap: 6px;
+  }
+
+  .container > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .card :global(.MuiCardContent-root) {
+    padding: 10px;
+  }
+
+  .label {
+    margin-left: 8px;
+    font-size: 12px;
+  }
+
+  .gradient {
+    width: 22px;
+    flex-shrink: 0;
+  }
+
+  .icon {
+    margin-left: 8px;
+  }
+}

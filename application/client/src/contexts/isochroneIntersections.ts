@@ -1,3 +1,4 @@
+import { MAX_LOCATIONS } from '../demo/requests.mjs';
 import { fetchIsochrone } from '@api/endpoints';
 import { ShortestPathData } from '@contexts/shortestPath';
 import { Feature, Polygon, MultiPolygon } from 'geojson';
@@ -25,7 +26,7 @@ export const useIsochroneIntersections=create<State>((set)=>({
     const signal=controller.signal, current=++generation;
     set({loading:true,data:[],progress:'Requesting travel-time contours…',error:{retry:false,message:''}});
     try {
-      if(!path.length || path.length>2)throw new Error('Choose two or three locations first.');
+      if(!path.length || path.length>=MAX_LOCATIONS)throw new Error(`Choose two to ${MAX_LOCATIONS} locations first.`);
       const results:IsochroneIntersectionsData[]=[];
       for(const [segmentIndex,segment] of path.entries()) {
         const plan=createPlan(segment.duration,segment.timeRange||0);
@@ -35,7 +36,7 @@ export const useIsochroneIntersections=create<State>((set)=>({
           if(signal.aborted)throw new DOMException('Cancelled','AbortError');
           set({progress:`Segment ${segmentIndex+1}/${path.length} · contour batch ${++completed}/${batches}`});
           const params=applyTransportationMode(segment.transportationMode,0,[segment.locations[direction]],segment.excludedLocations||[],direction===1,times.map((time:number)=>({time})));
-          const response=await fetchIsochrone(params,signal); contours[direction].push(...response.features);
+          const response=await fetchIsochrone(params,signal,seconds=>{if(current===generation)set({progress:`Segment ${segmentIndex+1}/${path.length} · server busy, retrying in ${seconds}s…`});}); contours[direction].push(...response.features);
         }
         set({progress:`Segment ${segmentIndex+1}/${path.length} · intersecting travel-time areas…`});
         const shapes=await new Promise<IsochroneIntersectionsData[]>((resolve,reject)=>{

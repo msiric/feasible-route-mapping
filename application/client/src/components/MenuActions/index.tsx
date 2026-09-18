@@ -57,6 +57,7 @@ export const MenuActions = () => {
   return (
     <CardHeader
       className={classes.header}
+      sx={{'& .MuiCardHeader-action': {m: 0, alignSelf: 'center', display: 'flex'}, '& .MuiCardHeader-content': {minWidth: 0}}}
       title={
         <Typography className={classes.heading}>
           Feasible route mapping

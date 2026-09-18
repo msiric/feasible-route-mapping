@@ -16,7 +16,7 @@ export const MenuCard = () => {
         !isMenuVisible && classes.containerHidden
       }`}
     >
-      <Card variant="outlined">
+      <Card variant="outlined" className={classes.card}>
         <MenuActions />
         <CardContent className={classes.content}>
           <DemoBar />
