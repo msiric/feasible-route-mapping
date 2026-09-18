@@ -32,12 +32,12 @@ export const SelectInput = ({
     control={control}
     render={({ field }) => (
       <FormControl className={classes.selectInput} fullWidth>
-        <InputLabel id="select-input">{label}</InputLabel>
+        <InputLabel id={`${name}-label`}>{label}</InputLabel>
         <Select
           {...field}
           MenuProps={{ PaperProps: { sx: { maxHeight: 350 } } }}
           label={label}
-          labelId="select-input"
+          labelId={`${name}-label`}
           size="small"
           disabled={disabled}
           onChange={(event) => {
@@ -49,8 +49,8 @@ export const SelectInput = ({
               {option.label}
             </MenuItem>
           ))}
-          <FormHelperText error={error}>{helperText}</FormHelperText>
         </Select>
+        <FormHelperText error={error}>{helperText}</FormHelperText>
       </FormControl>
     )}
   />
