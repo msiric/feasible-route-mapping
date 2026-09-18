@@ -46,3 +46,10 @@ test('engine work is serialized, oversized responses are rejected, and failures 
  const large=await serve(t,{fetcher:async()=>new Response('x'.repeat(2000001))});assert.equal((await large('/api/route',route)).status,503);
  const failed=await serve(t,{fetcher:async()=>{throw new Error('private internal detail')}});const result=await failed('/api/route',route);assert.equal(result.status,503);assert.ok(!(await result.text()).includes('private internal detail'));
 });
+
+test('fractional contour identity survives the engine’s two-decimal JSON labels',async t=>{
+ const request=await serve(t,{fetcher:async(_url,init)=>{
+  const p=JSON.parse(init.body);return Response.json({type:'FeatureCollection',features:p.contours.map(c=>({type:'Feature',properties:{color:'#'+c.color,contour:Math.round(c.time*100)/100},geometry:{type:'Polygon',coordinates:[]}}))});
+ }});
+ const response=await request('/api/isochrone',iso);assert.equal(response.status,200);const data=await response.json();assert.equal(data.features[1].properties.contour,2.1234);
+});
