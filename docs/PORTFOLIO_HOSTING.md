@@ -77,13 +77,13 @@ Samples remain available when **our live APIs** sleep or hit quotas, subject to 
 
 ## Branches and deployed versions
 
-**Merging source does not publish either host.** Backends follow retained restoration branches with auto-deploy Off. Pages uses Direct Upload; its production label can differ from the GitHub default.
+**Merging source does not publish either host.** Render backends now select their maintained GitHub default branches with auto-deploy and PR previews Off. Pages uses Direct Upload; its production label can differ from the GitHub default.
 
 | App | GitHub default | Render branch | Pages production `--branch` | Pages deployment | API commit |
 | --- | --- | --- | --- | --- | --- |
-| Vaxx | `main` | `codex/restore-public-demo` | `main` | `daa75d78` | `2a991070935184b486b3df1933432e74855dfa6e` |
-| Vesper | `master` | `codex/restore-public-demo` | `main` | `21f3d413` | `494132e6af53546bd029c39b5aa359e2746aa1f7` |
-| FRM | `master` | `codex/restore-public-demo` | `codex/restore-public-demo` | `c1bd1914` | `6d33283` |
+| Vaxx | `main` | `main` | `main` | `daa75d78` | `2a991070935184b486b3df1933432e74855dfa6e` |
+| Vesper | `master` | `master` | `main` | `21f3d413` | `494132e6af53546bd029c39b5aa359e2746aa1f7` |
+| FRM | `master` | `master` | `codex/restore-public-demo` | `c1bd1914` | `6d33283` |
 
 These are dated records, not a claim that every host has the same source hash. Later restoration commits included frontend, test and documentation fixes. Source merged through [Vaxx PR 1](https://github.com/msiric/vaxx-app/pull/1), [Vesper PR 39](https://github.com/msiric/vesper-art/pull/39) and [FRM PR 3](https://github.com/msiric/feasible-route-mapping/pull/3).
 
@@ -93,7 +93,7 @@ These are dated records, not a claim that every host has the same source hash. L
 
 1. Use a clean dedicated checkout of the intended commit, the tested Node 22 line and locked dependencies. Read that app's README/DEPLOYMENT.md. Do not reset a dirty original checkout.
 2. Run relevant tests/build/migration checks. Vesper's frontend needs **root and client `npm ci`** because shared modules import root dependencies. Tests use disposable local/CI databases.
-3. Confirm exact parent, existing service, Free/Frankfurt and auto-deploy Off. For the first future backend release from the default branch, explicitly change that demo service's source branch to the default, update `render.yaml` to agree, and manually deploy the tested commit. Keep the old commit recorded. Do not create a duplicate service.
+3. Confirm exact parent, existing service, Free/Frankfurt and auto-deploy Off. The service source branch and `render.yaml` now match the GitHub default (`main` for Vaxx, `master` for Vesper/FRM). Manually deploy the tested commit and retain the old commit for rollback. Do not create a duplicate service.
 4. Use reviewed compatible migrations. Vaxx starts `npm run migrate && npm start`; Vesper migrates/seeds within `npm start`. FRM builds the root Dockerfile including its graph. For additive API changes, release the compatible backend before the frontend.
 5. Verify readiness and an app operation. `/healthz` alone does not prove database/auth/routing correctness.
 6. Build and upload the frontend **from the repository root** with Wrangler, explicit account/profile/project and the exact production label above. Include root `functions/` and built `_routes.json`. Commands/output paths are in the app deployment file.
@@ -156,8 +156,8 @@ Monthly, or before sharing widely: inspect usage/plan settings, open all samples
 | Trigger | Improvement | Status |
 | --- | --- | --- |
 | Financial follow-up | Read-only audit of historic AWS/Fly/Railway bills and resources | Current charges remain unverified |
-| Next backend release | Align each Render source branch and manifest with GitHub default | Working deployment retained; manual rules documented |
-| More frequent Vaxx changes | Add CI using disposable PG, matching local tests | Tests exist; Vaxx has no Actions workflow |
+| Completed 18 September 2026 | Aligned each existing Render source branch and manifest with GitHub default | Auto-deploy/PR previews remain Off; current deployed API versions retained |
+| Completed 18 September 2026 | Added Vaxx CI using disposable PG, existing API/proxy/migration tests and a clean client build | All three repositories now have automatic validation; CI cannot deploy or access production secrets |
 | Measured slow first load | Profile bundles/images, lazy-load heavy routes/components | Optimize measured bottlenecks; no UI rewrite needed now |
 | Rising write traffic | Stronger abuse prevention, moderation and cleanup | Current limits bound normal demo workload |
 | FRM beyond portfolio use | Validated admin/time-zone enrichment and accuracy fixtures; remeasure image/RAM | Needed before broader routing claims |
