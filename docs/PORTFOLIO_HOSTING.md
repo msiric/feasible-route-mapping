@@ -6,7 +6,7 @@ Owner: Mario Siric (`msiric`). Last verified: **18 September 2026**. Shared oper
 
 Yes, for the agreed demo scope: working public frontends and live workflows, isolated free hosting, merged source, reproducible builds and documented limits. There is no known blocking defect in the flows tested during restoration. Every possible input, future dependency release and provider change has not been validated.
 
-The most useful remaining financial check is a **read-only audit of old AWS/Fly/Railway bills and resources**. Restoration did not cancel those resources or establish that they have stopped charging. Cleanup needs an exact resource inventory and confirmation that nothing else depends on it.
+A **legacy-host billing and resource audit** is tracked separately in private operator records, including AWS, Fly, Railway and historical Heroku hosting. Account access and current invoices must be checked before declaring all old charges eliminated. Partial evidence is not a complete account inventory. No legacy data has been deleted; any retirement needs exact resource ownership, dependency checks and an explicit data-retention decision.
 
 No additional architecture migration is justified by the observed demo workload. Maintain this setup and revisit the optional improvements below when their triggers occur.
 
@@ -149,13 +149,17 @@ Timings are observations on 18 September, not guarantees or averages. Public war
 
 Vaxx preserves historical vaccination workflows, not current medical recommendations. Vesper is simulated commerce. FRM uses approximate regions, bounded South Australia data and weighted reference routes, without complete admin/time-zone enrichment, live traffic or date-dependent validation. Bus is road routing. See [accuracy](../DEPLOYMENT.md#accuracy) and [data provenance](../deployment/DATA.md).
 
+## Frontend payload review
+
+On 18 September, the HTML-referenced entry JavaScript/CSS files were downloaded successfully and compressed locally for comparison: approximately 106 KiB for Vaxx, 244 KiB for Vesper and 263 KiB for FRM. These are gzip estimates, not a browser performance score or total page-transfer measurement; they exclude images, dynamic imports, workers and map tiles. No further framework rewrite is justified by these entry payloads alone. Profile actual slow interactions before choosing additional bundle work.
+
 ## Maintenance and optional improvements
 
 Monthly, or before sharing widely: inspect usage/plan settings, open all samples, run one live flow per app and review dependency/security alerts. Record the date and versions. Avoid frequent uptime pings that keep APIs awake. Run relevant checks after releases; review quotas after provider notices or traffic spikes.
 
 | Trigger | Improvement | Status |
 | --- | --- | --- |
-| Financial follow-up | Read-only audit of historic AWS/Fly/Railway bills and resources | Current charges remain unverified |
+| Financial follow-up | Finish legacy-host inventory and billing review in private operator records | Access-dependent checks remain; no blanket claim of zero historical charges |
 | Completed 18 September 2026 | Aligned each existing Render source branch and manifest with GitHub default | Auto-deploy/PR previews remain Off; current deployed API versions retained |
 | Completed 18 September 2026 | Added Vaxx CI using disposable PG, existing API/proxy/migration tests and a clean client build | All three repositories now have automatic validation; CI cannot deploy or access production secrets |
 | Measured slow first load | Profile bundles/images, lazy-load heavy routes/components | Optimize measured bottlenecks; no UI rewrite needed now |
